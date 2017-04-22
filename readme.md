@@ -12,8 +12,6 @@ Python VR is built on top of **Rust**, **Vulkan**, **OpenVR**, and **Language Se
 
 The application is divided into the main application that handles rendering/networking/gameplay/mods, a language server that conforms to the [Language Server Protocol Spec](https://github.com/Microsoft/language-server-protocol) that could theoretically be swapped with other languages in the future, and a Language VR Server to send language specific VR metadata along side the language server.
 
-## Screenshots
-
 | | Screenshots  | |
 |:--:|:--:|:--:|
 | ![][screenshot-1] | ![][screenshot-2] | ![][screenshot-3] |
