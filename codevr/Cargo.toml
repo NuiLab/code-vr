@@ -16,3 +16,4 @@ openvr = "0.1.1"
 [build-dependencies]
 vk-sys = "^0.2.2"
 vulkano-shaders = "0.3.2"
+curl = "0.4.6"

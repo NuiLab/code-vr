@@ -1,5 +1,12 @@
+extern crate curl;
+
 use std::env;
 use std::fs;
+use std::io;
+use std::io::Write;
+use std::path::Path;
+
+use curl::easy::Easy;
 
 /// Fetch the platform specific OpenVR 1.0.1 DLL and include it with the build
 fn fetch_openvr_sdk() {
@@ -27,22 +34,47 @@ fn fetch_openvr_sdk() {
     file.push_str(file_type.as_str());
 
     // if this file doesn't already exist in build directory
-    let out_dir = env::var("OUT_DIR").unwrap();
 
-    let mut download = String::from("https://github.com/ValveSoftware/openvr/raw/");
-    download.push_str(commit101.as_str());
-    download.push_str("/bin/");
-    download.push_str(os.as_str());
-    download.push_str(arch.as_str());
-    download.push_str("/");
-    download.push_str(file.as_str());
+    let mut out_dir = String::from(env::var("CARGO_MANIFEST_DIR").unwrap());
+    out_dir.push_str("/target/");
+    out_dir.push_str(env::var("PROFILE").unwrap().as_str());
 
-    println!("{}", out_dir);
+    let mut file_path_str = String::new();
+    file_path_str.push_str(out_dir.as_str());
+    file_path_str.push_str("/");
+    file_path_str.push_str(file.as_str());
 
-    // Fetch the file from GitHub
+    let file_path = Path::new(file_path_str.as_str());
 
+    if !file_path.exists() {
+
+        let mut download = String::from("https://raw.githubusercontent.com/ValveSoftware/openvr/");
+        download.push_str(commit101.as_str());
+        download.push_str("/bin/");
+        download.push_str(os.as_str());
+        download.push_str(arch.as_str());
+        download.push_str("/");
+        download.push_str(file.as_str());
+
+        // Fetch the file from GitHub
+        let mut open = fs::OpenOptions::new()
+            .read(true)
+            .write(true)
+            .create(true)
+            .open(file_path_str.as_str()).unwrap();
+
+        let mut handle = Easy::new();
+
+        handle.url(download.as_str()).unwrap();
+        handle
+            .write_function(move |data| {
+                Ok(open.write(data).unwrap())})
+            .unwrap();
+        handle.perform().unwrap();
+    }
 }
 
 fn main() {
     fetch_openvr_sdk();
 }
+
