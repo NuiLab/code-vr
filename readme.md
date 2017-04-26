@@ -1,3 +1,5 @@
+![Cover Image][screenshot-1]
+
 # Python VR
 
 [![License][license-img]][license-url]
