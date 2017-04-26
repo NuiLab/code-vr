@@ -18,7 +18,9 @@ The application is divided into the main application that handles rendering/netw
 
 ## Sponsors
 
-This game was sponsored by the [OpenHID Lab](http://openhid.com), an *HCI research lab* part of the [High Performance Database Research Center](http://hpdrc.fiu.edu/) at Florida International University.
+![Sponsors](docs/images/brand/sponsors.png)
+
+This project was sponsored by the [OpenHID Lab](http://openhid.com), an *HCI research lab* part of the [High Performance Database Research Center](http://hpdrc.fiu.edu/) at Florida International University.
 
 [screenshot-1]: docs/images/screenshots/0.png
 [screenshot-2]: docs/images/screenshots/1.png

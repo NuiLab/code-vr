@@ -12,6 +12,7 @@ vulkano = "0.3.2"
 vulkano-win = "0.3.2"
 winit = "0.6.3"
 openvr = "0.1.1"
+libloading = "0.3.4"
 
 [build-dependencies]
 vk-sys = "^0.2.2"

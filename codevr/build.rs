@@ -61,14 +61,14 @@ fn fetch_openvr_sdk() {
             .read(true)
             .write(true)
             .create(true)
-            .open(file_path_str.as_str()).unwrap();
+            .open(file_path_str.as_str())
+            .unwrap();
 
         let mut handle = Easy::new();
 
         handle.url(download.as_str()).unwrap();
         handle
-            .write_function(move |data| {
-                Ok(open.write(data).unwrap())})
+            .write_function(move |data| Ok(open.write(data).unwrap()))
             .unwrap();
         handle.perform().unwrap();
     }
