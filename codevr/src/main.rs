@@ -1,36 +1,27 @@
-extern crate openvr;
-extern crate winit;
-#[macro_use]
-extern crate vulkano;
-extern crate vulkano_win;
-extern crate serde;
-extern crate serde_json;
 #[macro_use]
 extern crate serde_derive;
-extern crate libloading;
+extern crate serde;
+extern crate serde_json;
 
-// Socket communication with language server
-use std::net;
+mod config;
+mod app;
+mod engine;
 
 fn main() {
+
     // Initialize application state
-    // @TODO - read_config();
-    let state = 0;
+    let state = config::read();
 
-    // Import and create descriptor tree of application
-    // @TODO - App::new();
-    let app = 0;
+    // Initialize app tree
+    let app = app::App::new();
 
-    // Start Coronal engine
-    // @TODO - Engine::new(state, app);
-    let engine = 0;
+    // Start engine
+    let engine = engine::Engine::new(state, app);
 
-    //while engine.update()
+    while engine.update()
     {
-        //engine.io();  
-        //engine.begin_update();      
-        //engine.update();
-        //engine.render();
-        //engine.end_update();
+        engine.render();
+        engine.io();   
     }
+
 }
