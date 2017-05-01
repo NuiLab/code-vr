@@ -1,5 +1,15 @@
 #[derive(Serialize, Deserialize)]
 pub struct GraphicsConfig {
-  vsync: bool,
-  antialiasing: u8,
+  #[serde(default = "vsync_default")]
+  pub vsync: bool,
+  #[serde(default = "aa_default")]
+  pub antialiasing: u8,
+}
+
+fn vsync_default() -> bool {
+  false
+}
+
+fn aa_default() -> u8 {
+  0
 }

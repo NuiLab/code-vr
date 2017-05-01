@@ -12,28 +12,53 @@ use self::window::WindowConfig;
 use self::graphics::GraphicsConfig;
 use self::sound::SoundConfig;
 use std::fs;
+use std::env;
 
 /// Configuration object passed to the renderer.
 #[derive(Serialize, Deserialize)]
-struct Config {
+pub struct Config {
   window: WindowConfig,
   graphics: GraphicsConfig,
   sound: SoundConfig
 }
 
+impl Config {
+    fn new() -> Config {
+        Config {
+            window: WindowConfig {
+                display: 0,
+                resolution: [1920, 1080],
+                fullscreen: true
+            },
+            graphics: GraphicsConfig {
+                antialiasing: 0,
+                vsync: false
+            },
+            sound: SoundConfig {
+                master: 100.0
+            }
+        }
+    }
+}
+
 /// Tries to read Config JSON data from the working directory, returns either defaults or what was in file.
 pub fn read() -> Config {
 
-    let mut default_config: Config = serde_json::from_str("").unwrap();
+    let default_config = Config::new();
 
     // Create codevr/ folder in WORKING_DIRECTORY
-    fs::create_dir("%APPDATA%/codevr").unwrap_or(());
+    let mut working = env::var("APPDATA").unwrap();
+    working.push_str("/codevr");
+    fs::create_dir(working.as_str()).unwrap_or_default();
+
+    working.push_str("/config.json");
+
 
     let open = OpenOptions::new()
         .read(true)
         .write(true)
         .create(true)
-        .open("%APPDATA%/codevr/config.json");
+        .open(working.as_str());
 
     let mut contents = String::new();
 
@@ -44,7 +69,7 @@ pub fn read() -> Config {
 
     match file.read_to_string(&mut contents) {
         Err(_) => return default_config,
-        Ok(c) => (),
+        Ok(_) => (),
     }
 
     if contents.is_empty() {

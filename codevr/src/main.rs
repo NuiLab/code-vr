@@ -16,7 +16,7 @@ fn main() {
     let app = app::App::new();
 
     // Start engine
-    let engine = engine::Engine::new(state, app);
+    let engine = engine::Engine::new(/*state, app*/);
 
     while engine.update()
     {

@@ -1,11 +1,11 @@
 #[derive(Serialize, Deserialize)]
 pub struct WindowConfig {
     #[serde(default = "display_default")]
-    display: u32,
+    pub display: u32,
     #[serde(default = "resolution_default")]
-    resolution: [u32; 2],
+    pub resolution: [u32; 2],
     #[serde(default = "fullscreen_default")]
-    fullscreen: bool,
+    pub fullscreen: bool,
 }
 
 fn fullscreen_default() -> bool {
