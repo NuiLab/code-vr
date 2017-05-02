@@ -10,7 +10,7 @@ serde_derive = "1.0.0"
 serde_json = "1.0.0"
 vulkano = "0.3.2"
 vulkano-win = "0.3.2"
-winit = "0.6.3"
+winit = "0.5.2"
 openvr = "0.1.1"
 libloading = "0.3.4"
 

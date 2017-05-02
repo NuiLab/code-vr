@@ -1,25 +1,25 @@
-extern crate serde_json;
-
 mod window;
 mod graphics;
 mod sound;
 
 use std::fs::OpenOptions;
 use std::io::{Read, Write};
-use serde::Serialize;
 
-use self::window::WindowConfig;
-use self::graphics::GraphicsConfig;
-use self::sound::SoundConfig;
+pub use self::window::WindowConfig;
+pub use self::graphics::GraphicsConfig;
+pub use self::sound::SoundConfig;
+
 use std::fs;
 use std::env;
+
+use serde_json;
 
 /// Configuration object passed to the renderer.
 #[derive(Serialize, Deserialize)]
 pub struct Config {
-  window: WindowConfig,
-  graphics: GraphicsConfig,
-  sound: SoundConfig
+  pub window: WindowConfig,
+  pub graphics: GraphicsConfig,
+  pub sound: SoundConfig
 }
 
 impl Config {

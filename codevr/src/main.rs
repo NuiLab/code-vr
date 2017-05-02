@@ -1,7 +1,13 @@
-#[macro_use]
-extern crate serde_derive;
 extern crate serde;
 extern crate serde_json;
+#[macro_use]
+extern crate serde_derive;
+#[macro_use]
+extern crate vulkano;
+extern crate winit;
+extern crate vulkano_win;
+
+use vulkano_win::VkSurfaceBuild;
 
 mod config;
 mod app;
@@ -16,7 +22,7 @@ fn main() {
     let app = app::App::new();
 
     // Start engine
-    let engine = engine::Engine::new(/*state, app*/);
+    let engine = engine::Engine::new(state/*, app*/);
 
     while engine.update()
     {
