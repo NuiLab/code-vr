@@ -1,8 +1,9 @@
-use winit::{WindowBuilder, get_available_monitors, get_primary_monitor};
+use winit::{WindowBuilder, get_available_monitors, get_primary_monitor, Event, ElementState};
 use vulkano_win::{Window, VkSurfaceBuild, required_extensions};
 use vulkano::instance::{Instance, PhysicalDevice};
 use vulkano::device::{Queue, Device, DeviceExtensions};
 use vulkano::swapchain::{Swapchain, SurfaceTransform};
+use vulkano::image::{SwapchainImage};
 
 use config::Config;
 use config::WindowConfig;
@@ -14,6 +15,7 @@ pub struct Engine {
     instance: Arc<Instance>,
     device: Arc<Device>,
     swapchain: Arc<Swapchain>,
+    images: Vec<Arc<SwapchainImage>>,
     queue: Arc<Queue>
 
 }
@@ -95,11 +97,20 @@ impl Engine {
             instance: instance.clone(),
             device,
             swapchain,
+            images,
             queue
         }
     }
 
-    pub fn io(&self) {}
+    pub fn io(&self) -> bool {
+        for ev in self.window.window().poll_events() {
+            match ev {
+                Event::Closed => return false,
+                _ => (),
+            };
+        }
+       true
+    }
 
     pub fn update(&self) -> bool {
         false
@@ -108,8 +119,40 @@ impl Engine {
     pub fn render(&self) {}
 }
 
+fn create_swapchain(window: Window, physical_device: PhysicalDevice, device: Arc<Device>, queue: Arc<Queue>) -> (Arc<Swapchain>, Vec<Arc<SwapchainImage>>) {
+{
+            let caps = window
+                .surface()
+                .get_capabilities(&physical_device)
+                .expect("failed to get surface capabilities");
+
+            let dimensions = caps.current_extent.unwrap_or([1280, 720]);
+
+            let present = caps.present_modes.iter().next().unwrap();
+
+            let alpha = caps.supported_composite_alpha.iter().next().unwrap();
+
+            let format = caps.supported_formats[0].0;
+
+            Swapchain::new(&device,
+                           &window.surface(),
+                           caps.min_image_count,
+                           format,
+                           dimensions,
+                           1,
+                           &caps.supported_usage_flags,
+                           &queue,
+                           SurfaceTransform::Identity,
+                           alpha,
+                           present,
+                           true,
+                           None)
+                    .expect("failed to create swapchain")
+        }
+}
+
 /// Creates a window builder with a given window configuration.
-pub fn create_window(config: WindowConfig) -> WindowBuilder {
+fn create_window(config: WindowConfig) -> WindowBuilder {
 
     let window_manager = WindowBuilder::new()
         .with_title("CodeVR")

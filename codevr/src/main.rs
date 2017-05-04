@@ -7,8 +7,6 @@ extern crate vulkano;
 extern crate winit;
 extern crate vulkano_win;
 
-use vulkano_win::VkSurfaceBuild;
-
 mod config;
 mod app;
 mod engine;
@@ -24,10 +22,10 @@ fn main() {
     // Start engine
     let engine = engine::Engine::new(state/*, app*/);
 
-    while engine.update()
+    while engine.io()
     {
+        engine.update();
         engine.render();
-        engine.io();   
     }
 
 }
