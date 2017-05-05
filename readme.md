@@ -38,7 +38,7 @@ This project was sponsored by the [OpenHID Lab](http://openhid.com), an *HCI res
 
 [license-img]: http://img.shields.io/:license-mit-blue.svg?style=flat-square
 [license-url]: https://opensource.org/licenses/MIT
-[travis-img]: https://img.shields.io/travis/openhid/code-vr.svg?style=flat-square
-[travis-url]:https://travis-ci.org/openhid/code-vr
-[codecov-img]:https://img.shields.io/codecov/c/github/openhid/code-vr.svg?style=flat-square
-[codecov-url]: https://codecov.io/gh/openhid/code-vr
+[travis-img]: https://img.shields.io/travis/OpenHID/code-vr.svg?style=flat-square
+[travis-url]: https://travis-ci.org/OpenHID/code-vr
+[codecov-img]:https://img.shields.io/codecov/c/github/OpenHID/code-vr.svg?style=flat-square
+[codecov-url]: https://codecov.io/gh/OpenHID/code-vr
