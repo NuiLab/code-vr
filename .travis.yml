@@ -4,6 +4,7 @@ rust:
 
 before_install:
   - sudo apt-get update
+  - cd codevr
 
 addons:
   apt:
@@ -16,7 +17,6 @@ addons:
       - binutils-dev
 
 after_success: |
-  cd codevr &&
   wget https://github.com/SimonKagstrom/kcov/archive/master.tar.gz &&
   tar xzf master.tar.gz &&
   cd kcov-master &&

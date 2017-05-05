@@ -2,7 +2,7 @@ use winit::{WindowBuilder, get_available_monitors, get_primary_monitor, Event, E
 use vulkano_win::{Window, VkSurfaceBuild, required_extensions};
 use vulkano::instance::{Instance, PhysicalDevice};
 use vulkano::device::{Queue, Device, DeviceExtensions};
-use vulkano::swapchain::{Swapchain, SurfaceTransform};
+use vulkano::swapchain::{Swapchain, SurfaceTransform, PresentMode};
 use vulkano::image::SwapchainImage;
 use vulkano::command_buffer::Submission;
 
@@ -83,9 +83,9 @@ impl Engine {
 
     /// Handles input/output events from the window and any input middleware.
     pub fn io(&mut self) -> bool {
-    
+
         for ev in self.window.window().poll_events() {
-            
+
             // inputmap.map(ev);
 
             // Core Events
@@ -155,7 +155,12 @@ fn create_swapchain(window: &Window,
         };
 
 
-        let present = caps.present_modes.iter().next().unwrap();
+        let present = if config.graphics.vsync &&
+                         caps.present_modes.supports(PresentMode::Mailbox) {
+            PresentMode::Mailbox
+        } else {
+            caps.present_modes.iter().next().unwrap()
+        };
 
         let alpha = caps.supported_composite_alpha.iter().next().unwrap();
 
