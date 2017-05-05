@@ -4,6 +4,7 @@ use vulkano::instance::{Instance, PhysicalDevice};
 use vulkano::device::{Queue, Device, DeviceExtensions};
 use vulkano::swapchain::{Swapchain, SurfaceTransform};
 use vulkano::image::SwapchainImage;
+use vulkano::command_buffer::Submission;
 
 use config::Config;
 use config::WindowConfig;
@@ -19,6 +20,7 @@ pub struct Engine {
     swapchain: Arc<Swapchain>,
     images: Vec<Arc<SwapchainImage>>,
     queue: Arc<Queue>,
+    config: Config,
 }
 
 impl Engine {
@@ -64,12 +66,8 @@ impl Engine {
         let queue = queues.next().unwrap();
 
         // Swapchain, Swapchain Images
-        let (swapchain, images) = create_swapchain(&window,
-                                                   &physical,
-                                                   &device,
-                                                   &queue,
-                                                   &config.window.resolution,
-                                                   None);
+        let (swapchain, images) =
+            create_swapchain(&window, &physical, &device, &queue, None, &config);
 
         Engine {
             window: window,
@@ -79,15 +77,21 @@ impl Engine {
             swapchain,
             images,
             queue,
+            config,
         }
     }
 
+    /// Handles input/output events from the window and any input middleware.
     pub fn io(&mut self) -> bool {
+    
         for ev in self.window.window().poll_events() {
+            
+            // inputmap.map(ev);
+
+            // Core Events
             match ev {
                 Event::Resized(w, h) => {
-                    //self.images.map(| i | i.drop());
-
+                    self.config.window.resolution = [w, h];
                     let (swapchain, images) =
                         create_swapchain(&self.window,
                                          &PhysicalDevice::from_index(&self.instance,
@@ -95,8 +99,8 @@ impl Engine {
                                                   .unwrap(),
                                          &self.device,
                                          &self.queue,
-                                         &[w, h],
-                                         Some(&self.swapchain));
+                                         Some(&self.swapchain),
+                                         &self.config);
                     self.swapchain = swapchain;
                     self.images = images;
                 }
@@ -107,12 +111,23 @@ impl Engine {
         true
     }
 
-    pub fn update(&self) {}
+    /// Recursively updates application tree.
+    pub fn update(&self) {
 
+        //@TODO recursively map each update function from each node.
+        //node.children.map(update)
+
+    }
+
+    /// Updates the display surface with a new image.
     pub fn render(&self) {
+
         let image_num = self.swapchain
             .acquire_next_image(Duration::new(1, 0))
             .unwrap();
+
+        // @TODO build command buffers with threads and submit the changes in main thread (here)
+        // submissions.push(command_buffer::submit(&command_buffer, &queue).unwrap());
 
         self.swapchain.present(&self.queue, image_num).unwrap();
     }
@@ -122,8 +137,8 @@ fn create_swapchain(window: &Window,
                     physical_device: &PhysicalDevice,
                     device: &Arc<Device>,
                     queue: &Arc<Queue>,
-                    dimension: &[u32; 2],
-                    old: Option<&Arc<Swapchain>>)
+                    old: Option<&Arc<Swapchain>>,
+                    config: &Config)
                     -> (Arc<Swapchain>, Vec<Arc<SwapchainImage>>) {
     {
         let caps = window
@@ -132,11 +147,13 @@ fn create_swapchain(window: &Window,
             .expect("failed to get surface capabilities");
 
 
-        let dimensions = if dimension[0] <= 240 || dimension[1] <= 240 {
-            caps.current_extent.unwrap_or([1280, 720])
+        let dimensions = if config.window.resolution[0] <= 240 ||
+                            config.window.resolution[1] <= 240 {
+            caps.current_extent.unwrap_or([800, 600])
         } else {
-            *dimension
+            config.window.resolution
         };
+
 
         let present = caps.present_modes.iter().next().unwrap();
 
