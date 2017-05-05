@@ -15,7 +15,7 @@ use std::env;
 use serde_json;
 
 /// Configuration object passed to the renderer.
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Config {
   pub window: WindowConfig,
   pub graphics: GraphicsConfig,
@@ -27,7 +27,7 @@ impl Config {
         Config {
             window: WindowConfig {
                 display: 0,
-                resolution: [1920, 1080],
+                resolution: [0, 0],
                 fullscreen: true
             },
             graphics: GraphicsConfig {

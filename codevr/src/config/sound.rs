@@ -1,4 +1,4 @@
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct SoundConfig {
   #[serde(default = "master_default")]
   pub master: f32

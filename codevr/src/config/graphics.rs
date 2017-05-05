@@ -1,4 +1,4 @@
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct GraphicsConfig {
   #[serde(default = "vsync_default")]
   pub vsync: bool,

@@ -13,15 +13,16 @@ mod engine;
 
 fn main() {
 
-    // Initialize application state
+    // Initialize app state
     let state = config::read();
 
     // Initialize app tree
     let app = app::App::new();
 
     // Start engine
-    let engine = engine::Engine::new(state/*, app*/);
+    let mut engine = engine::Engine::new(state/*, app*/);
 
+    // Render loop
     while engine.io()
     {
         engine.update();
