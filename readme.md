@@ -6,6 +6,8 @@
 [![Unit Tests][travis-img]][travis-url]
 [![Coverage Tests][codecov-img]][codecov-url]
 
+> **🚧 Currently Under Construction 🚧** - Currently building the engine, follow the devlog at [@alainxyz](https://twitter.com/alainxyz) or at [my website](https://alain.xyz/blog). 😃
+
 Code VR is a **free** *virtual reality* game for programming, designed to teach beginners the fundamentals of programming, let intermediate/advanced developers to compete in daily programming competitions, explore existing codebases as if they were a real place, and collaborate with other programmers whether they're on their favorite Text Editor/IDE or in the game.
 
 Currently it only supports **Python**, but we plan on adding support for more languages in the future.
