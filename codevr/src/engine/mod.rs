@@ -20,7 +20,7 @@ pub struct Engine {
     swapchain: Arc<Swapchain>,
     images: Vec<Arc<SwapchainImage>>,
     queue: Arc<Queue>,
-    config: Config,
+    config: Config
 }
 
 impl Engine {
@@ -86,8 +86,6 @@ impl Engine {
 
         for ev in self.window.window().poll_events() {
 
-            // inputmap.map(ev);
-
             // Core Events
             match ev {
                 Event::Resized(w, h) => {
@@ -108,6 +106,7 @@ impl Engine {
                 _ => (),
             };
         }
+        
         true
     }
 
@@ -133,6 +132,7 @@ impl Engine {
     }
 }
 
+/// Sets up and creates a swapchain
 fn create_swapchain(window: &Window,
                     physical_device: &PhysicalDevice,
                     device: &Arc<Device>,
