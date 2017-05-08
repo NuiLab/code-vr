@@ -85,6 +85,10 @@ impl Engine {
     pub fn io(&mut self) -> bool {
 
         for ev in self.window.window().poll_events() {
+            // @TODO
+            // For each axis: config::input::Axis in config.input
+            // For each axis_value: config::input::AxisValue in event
+            // map axis_value.key to winit::Event as mapped_event
 
             // Core Events
             match ev {

@@ -20,4 +20,10 @@ impl App {
     }
     */
   }
+
+  fn render(&self) {
+    // Option 1 - Create command buffers here.
+    // Option 2 create description of what you want to render w/ gltf like declarations.
+    // The renderer is responsable for taking the render tree and splitting it into threads to create command buffers to render.
+  }
 }

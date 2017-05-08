@@ -1,6 +1,7 @@
 mod window;
 mod graphics;
 mod sound;
+mod input;
 
 use std::fs::OpenOptions;
 use std::io::{Read, Write};
@@ -8,6 +9,7 @@ use std::io::{Read, Write};
 pub use self::window::WindowConfig;
 pub use self::graphics::GraphicsConfig;
 pub use self::sound::SoundConfig;
+pub use self::input::{InputConfig, default_input};
 
 use std::fs;
 use std::env;
@@ -19,24 +21,17 @@ use serde_json;
 pub struct Config {
   pub window: WindowConfig,
   pub graphics: GraphicsConfig,
-  pub sound: SoundConfig
+  pub sound: SoundConfig,
+  pub input: InputConfig
 }
 
 impl Config {
     fn new() -> Config {
         Config {
-            window: WindowConfig {
-                display: 0,
-                resolution: [0, 0],
-                fullscreen: true
-            },
-            graphics: GraphicsConfig {
-                antialiasing: 0,
-                vsync: false
-            },
-            sound: SoundConfig {
-                master: 100.0
-            }
+            window: WindowConfig::new(),
+            graphics: GraphicsConfig::new(),
+            sound: SoundConfig::new(),
+            input: default_input()
         }
     }
 }

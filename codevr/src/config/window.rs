@@ -8,6 +8,16 @@ pub struct WindowConfig {
     pub fullscreen: bool,
 }
 
+impl WindowConfig {
+    pub fn new() -> WindowConfig {
+        WindowConfig {
+                display: 0,
+                resolution: [0, 0],
+                fullscreen: true
+            }
+    } 
+}
+
 fn fullscreen_default() -> bool {
     true
 }

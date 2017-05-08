@@ -6,6 +6,15 @@ pub struct GraphicsConfig {
   pub antialiasing: u8,
 }
 
+impl GraphicsConfig {
+  pub fn new() -> GraphicsConfig {
+    GraphicsConfig {
+                antialiasing: 0,
+                vsync: false
+            }
+  }
+}
+
 fn vsync_default() -> bool {
   false
 }
