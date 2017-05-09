@@ -20,8 +20,7 @@ For example:
       "meta": {
         "deadzone": 0.25,
         "sensitivity": 1.0
-        "invert": false,
-
+        "invert": false
       }
     }
   ]
@@ -45,11 +44,11 @@ pub type Axis = Vec<AxisValue>;
 #[derive(Serialize, Deserialize, Clone)]
 pub struct AxisValue {
     #[serde(default = "key_default")]
-    key: String,
+    pub key: String,
     #[serde(default = "scale_default")]
-    scale: f32,
+    pub scale: f32,
     #[serde(default = "meta_default")]
-    meta: Option<AxisMeta>,
+    pub meta: Option<AxisMeta>,
 }
 
 fn key_default() -> String {
@@ -72,11 +71,11 @@ fn axis_value(key: String, scale: f32, meta: Option<AxisMeta>) -> AxisValue {
 #[derive(Serialize, Deserialize, Clone)]
 pub struct AxisMeta {
     #[serde(default = "deadzone_default")]
-    deadzone: f32,
+    pub deadzone: f32,
     #[serde(default = "sensitivity_default")]
-    sensitivity: f32,
+    pub sensitivity: f32,
     #[serde(default = "invert_default")]
-    invert: bool,
+    pub invert: bool,
 }
 
 fn deadzone_default() -> f32 {

@@ -13,6 +13,7 @@ pub use self::input::{InputConfig, default_input};
 
 use std::fs;
 use std::env;
+use std::path::Path;
 
 use serde_json;
 
@@ -43,7 +44,13 @@ pub fn read() -> Config {
 
     // Create codevr/ folder in WORKING_DIRECTORY
     let mut working = env::var("APPDATA").unwrap();
+    if cfg!(target_os = "linux") {
+         working = env::var("HOME").unwrap();
+     }
+
     working.push_str("/codevr");
+
+
     fs::create_dir(working.as_str()).unwrap_or_default();
 
     working.push_str("/config.json");

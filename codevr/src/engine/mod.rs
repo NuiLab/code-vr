@@ -1,3 +1,5 @@
+mod events;
+
 use winit::{WindowBuilder, get_available_monitors, get_primary_monitor, Event, ElementState};
 use vulkano_win::{Window, VkSurfaceBuild, required_extensions};
 use vulkano::instance::{Instance, PhysicalDevice};
@@ -11,6 +13,7 @@ use config::WindowConfig;
 
 use std::sync::Arc;
 use std::time::Duration;
+use std::collections::HashMap;
 
 pub struct Engine {
     window: Window,
@@ -20,7 +23,8 @@ pub struct Engine {
     swapchain: Arc<Swapchain>,
     images: Vec<Arc<SwapchainImage>>,
     queue: Arc<Queue>,
-    config: Config
+    config: Config,
+    inputs: HashMap<String, f32>
 }
 
 impl Engine {
@@ -69,6 +73,8 @@ impl Engine {
         let (swapchain, images) =
             create_swapchain(&window, &physical, &device, &queue, None, &config);
 
+        let mut inputs: HashMap<String, f32> = config.input.keys().map(|k| (k.clone(), 0.0f32)).collect();
+        
         Engine {
             window: window,
             instance,
@@ -78,6 +84,7 @@ impl Engine {
             images,
             queue,
             config,
+            inputs
         }
     }
 
@@ -85,14 +92,27 @@ impl Engine {
     pub fn io(&mut self) -> bool {
 
         for ev in self.window.window().poll_events() {
-            // @TODO
-            // For each axis: config::input::Axis in config.input
-            // For each axis_value: config::input::AxisValue in event
-            // map axis_value.key to winit::Event as mapped_event
+
+            // Axis Map
+            for (string_key, axis) in self.config.input.iter() {
+                for axis_value in axis {
+
+                    let out = events::string_to_wevent(&axis_value.key, &ev);
+
+                    // Check axis_value.meta for additional checks.
+
+                    // Write to axis map
+                    match out {
+                        Some(x) => *self.inputs.get_mut(string_key).unwrap() = x,
+                        None => ()
+                    };
+
+                }
+            }
 
             // Core Events
-            match ev {
-                Event::Resized(w, h) => {
+            match &ev {
+                &Event::Resized(w, h) => {
                     self.config.window.resolution = [w, h];
                     let (swapchain, images) =
                         create_swapchain(&self.window,
@@ -106,7 +126,7 @@ impl Engine {
                     self.swapchain = swapchain;
                     self.images = images;
                 }
-                Event::Closed => return false,
+                &Event::Closed => return false,
                 _ => (),
             };
         }
