@@ -5,6 +5,7 @@
 [![License][license-img]][license-url]
 [![Unit Tests][travis-img]][travis-url]
 [![Coverage Tests][codecov-img]][codecov-url]
+[![Discord Server][discord-img]][discord-url]
 
 > **🚧 Currently Under Construction 🚧** - Currently building the engine, follow the devlog at [@alainxyz](https://twitter.com/alainxyz) or at [my website](https://alain.xyz/blog).
 
@@ -44,3 +45,5 @@ This project was sponsored by the [OpenHID Lab](http://openhid.com), an *HCI res
 [travis-url]: https://travis-ci.org/OpenHID/code-vr
 [codecov-img]:https://img.shields.io/codecov/c/github/OpenHID/code-vr.svg?style=flat-square
 [codecov-url]: https://codecov.io/gh/OpenHID/code-vr
+[discord-img]: https://img.shields.io/:discord-chat-ae23ae.svg?style=flat-square
+[discord-url]: https://discord.gg/PGxk2
