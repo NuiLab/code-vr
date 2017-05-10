@@ -33,9 +33,7 @@ These are mapped to winit::Event instances, and updated when those events occur 
 
 */
 
-use serde::de::{Deserialize, Deserializer, Visitor, MapAccess};
 use std::collections::HashMap;
-use std::str::FromStr;
 
 pub type InputConfig = HashMap<String, Axis>;
 
@@ -95,7 +93,7 @@ pub fn default_input() -> InputConfig {
     @TODO - Make macro to generate this map faster.
     input_config!({
       "move_right" : {
-          key : "right_arrow", 
+          key : "arrow_right", 
           sensitivity: 1.0, 
           meta: None
           }
@@ -104,11 +102,11 @@ pub fn default_input() -> InputConfig {
     
     let mut i = InputConfig::new();
     i.insert(String::from("move_right"),
-             vec![axis_value(String::from("right_arrow"), 1.0, None),
-                  axis_value(String::from("left_arrow"), -1.0, None)]);
+             vec![axis_value(String::from("arrow_right"), 1.0, None),
+                  axis_value(String::from("arrow_left"), -1.0, None)]);
     i.insert(String::from("move_forward"), 
-            vec![axis_value(String::from("up_arrow"), 1.0, None),
-                  axis_value(String::from("down_arrow"), -1.0, None)]);
+            vec![axis_value(String::from("arrow_up"), 1.0, None),
+                  axis_value(String::from("arrow_down"), -1.0, None)]);
     i
 }
 
