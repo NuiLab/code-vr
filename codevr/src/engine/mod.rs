@@ -6,7 +6,10 @@ use vulkano::instance::{Instance, PhysicalDevice};
 use vulkano::device::{Queue, Device, DeviceExtensions};
 use vulkano::swapchain::{Swapchain, SurfaceTransform, PresentMode};
 use vulkano::image::SwapchainImage;
-use vulkano::command_buffer::Submission;
+use vulkano::image::attachment::AttachmentImage;
+use vulkano::framebuffer::Framebuffer;
+use vulkano::command_buffer::{PrimaryCommandBufferBuilder, Submission, submit};
+use vulkano::format;
 
 use config::Config;
 use config::WindowConfig;
@@ -15,6 +18,31 @@ use std::sync::Arc;
 use std::time::Duration;
 use std::collections::HashMap;
 
+mod render_pass {
+
+    use vulkano::format;
+    use vulkano::format::Format;
+
+    single_pass_renderpass!{
+    attachments: {
+        color: {
+            load: Clear,
+            store: Store,
+            format: Format,
+        },
+        depth: {
+            load: Clear,
+            store: DontCare,
+            format: format::D16Unorm,
+            }
+        },
+        pass: {
+            color: [color],
+            depth_stencil: {depth}
+        }
+    }
+}
+
 pub struct Engine {
     window: Window,
     instance: Arc<Instance>,
@@ -22,9 +50,13 @@ pub struct Engine {
     device: Arc<Device>,
     swapchain: Arc<Swapchain>,
     images: Vec<Arc<SwapchainImage>>,
+    depth_buffer: Arc<AttachmentImage<format::D16Unorm>>,
+    render_pass: Arc<render_pass::CustomRenderPass>,
+    framebuffers: Vec<Arc<Framebuffer<render_pass::CustomRenderPass>>>,
+    submissions: Vec<Arc<Submission>>,
     queue: Arc<Queue>,
     config: Config,
-    inputs: HashMap<String, f32>
+    inputs: HashMap<String, f32>,
 }
 
 impl Engine {
@@ -73,8 +105,46 @@ impl Engine {
         let (swapchain, images) =
             create_swapchain(&window, &physical, &device, &queue, None, &config);
 
-        let mut inputs: HashMap<String, f32> = config.input.keys().map(|k| (k.clone(), 0.0f32)).collect();
-        
+        let depth_buffer =
+            AttachmentImage::transient(&device, images[0].dimensions(), format::D16Unorm).unwrap();
+
+
+
+        // Render Pass
+        let render_pass =
+            render_pass::CustomRenderPass::new(&device,
+                                               &render_pass::Formats {
+                                                    // Use the format of the images and one sample.
+                                                    color: (images[0].format(), 1),
+                                                    depth: (format::D16Unorm, 1),
+                                                })
+                    .unwrap();
+
+        let framebuffers = images
+            .iter()
+            .map(|image| {
+                let attachments = render_pass::AList {
+                    color: &image,
+                    depth: &depth_buffer,
+                };
+
+                Framebuffer::new(&render_pass,
+                                 [image.dimensions()[0], image.dimensions()[1], 1],
+                                 attachments)
+                        .unwrap()
+            })
+            .collect::<Vec<_>>();
+
+        // Queue Submissions
+        let submissions = Vec::new();
+
+        // Input System
+        let mut inputs: HashMap<String, f32> = config
+            .input
+            .keys()
+            .map(|k| (k.clone(), 0.0f32))
+            .collect();
+
         Engine {
             window: window,
             instance,
@@ -82,9 +152,13 @@ impl Engine {
             device,
             swapchain,
             images,
+            depth_buffer,
+            framebuffers,
+            render_pass,
+            submissions,
             queue,
             config,
-            inputs
+            inputs,
         }
     }
 
@@ -104,7 +178,7 @@ impl Engine {
                     // Write to axis map
                     match out {
                         Some(x) => *self.inputs.get_mut(string_key).unwrap() = x,
-                        None => ()
+                        None => (),
                     };
 
                 }
@@ -125,12 +199,30 @@ impl Engine {
                                          &self.config);
                     self.swapchain = swapchain;
                     self.images = images;
+                    self.depth_buffer = AttachmentImage::transient(&self.device,
+                                                                   self.images[0].dimensions(),
+                                                                   format::D16Unorm)
+                            .unwrap();
+                    self.framebuffers = self.images
+                        .iter()
+                        .map(|image| {
+                            let attachments = render_pass::AList {
+                                color: &image,
+                                depth: &self.depth_buffer,
+                            };
+
+                            Framebuffer::new(&self.render_pass,
+                                             [image.dimensions()[0], image.dimensions()[1], 1],
+                                             attachments)
+                                    .unwrap()
+                        })
+                        .collect::<Vec<_>>();
                 }
                 &Event::Closed => return false,
                 _ => (),
             };
         }
-        
+
         true
     }
 
@@ -143,14 +235,28 @@ impl Engine {
     }
 
     /// Updates the display surface with a new image.
-    pub fn render(&self) {
-
+    pub fn render(&mut self) {
+        let command_buffers = self.framebuffers
+            .iter()
+            .map(|framebuffer| {
+                PrimaryCommandBufferBuilder::new(&self.device, self.queue.family())
+                    .draw_inline(&self.render_pass,
+                                 &framebuffer,
+                                 render_pass::ClearValues {
+                                     color: [0.2, 0.4, 0.8, 1.0],
+                                     depth: 1.0,
+                                 })
+                    .draw_end()
+                    .build()
+            })
+            .collect::<Vec<_>>();
         let image_num = self.swapchain
             .acquire_next_image(Duration::new(1, 0))
             .unwrap();
 
         // @TODO build command buffers with threads and submit the changes in main thread (here)
-        // submissions.push(command_buffer::submit(&command_buffer, &queue).unwrap());
+        self.submissions
+            .push(submit(&command_buffers[image_num], &self.queue).unwrap());
 
         self.swapchain.present(&self.queue, image_num).unwrap();
     }
@@ -241,4 +347,3 @@ fn create_window(config: &WindowConfig) -> WindowBuilder {
 
     window_manager
 }
-
