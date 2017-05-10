@@ -45,5 +45,5 @@ This project was sponsored by the [OpenHID Lab](http://openhid.com), an *HCI res
 [travis-url]: https://travis-ci.org/OpenHID/code-vr
 [codecov-img]:https://img.shields.io/codecov/c/github/OpenHID/code-vr.svg?style=flat-square
 [codecov-url]: https://codecov.io/gh/OpenHID/code-vr
-[discord-img]: https://img.shields.io/:discord-chat-ae23ae.svg?style=flat-square
-[discord-url]: https://discord.gg/PGxk2
+[discord-img]: https://img.shields.io/:discord-chat-7289da.svg?style=flat-square
+[discord-url]: https://discord.gg/zNE69uf
