@@ -1,6 +1,4 @@
-![Cover Image][screenshot-1]
-
-# Code VR
+![CodeVR Logo](docs/images/brand/logo.png)
 
 [![License][license-img]][license-url]
 [![Unit Tests][travis-img]][travis-url]
