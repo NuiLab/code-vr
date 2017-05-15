@@ -88,25 +88,48 @@ fn invert_default() -> bool {
     false
 }
 
+macro_rules! input_config {
+    ($($field:ident: [ $([$key:ident, $sensitivity:expr, $meta:expr ]),* ]),*) => {
+        {
+            let mut i = InputConfig::new();
+            $(
+            i.insert(
+                String::from(stringify!($field)),
+                vec![
+                    $(
+                        axis_value(String::from(stringify!($key)), $sensitivity, $meta),
+                    )*
+                    ]
+                );
+            )*
+            i
+        }
+    };
+}
+
 pub fn default_input() -> InputConfig {
-    /*
-    @TODO - Make macro to generate this map faster.
-    input_config!({
-      "move_right" : {
-          key : "arrow_right", 
-          sensitivity: 1.0, 
-          meta: None
-          }
-        });
-    */
-    
-    let mut i = InputConfig::new();
-    i.insert(String::from("move_right"),
-             vec![axis_value(String::from("arrow_right"), 1.0, None),
-                  axis_value(String::from("arrow_left"), -1.0, None)]);
-    i.insert(String::from("move_forward"), 
-            vec![axis_value(String::from("arrow_up"), 1.0, None),
-                  axis_value(String::from("arrow_down"), -1.0, None)]);
+
+    let i = input_config!(
+        move_right: [[
+            arrow_right, 
+            1.0, 
+            None
+          ],[
+              arrow_left,
+              -1.0,
+              None
+          ]],
+        move_forward: [[
+            arrow_up,
+            1.0,
+            None
+        ],[
+            arrow_down,
+            -1.0,
+            None
+        ]]
+    );
+
     i
 }
 
