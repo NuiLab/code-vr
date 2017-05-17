@@ -276,10 +276,22 @@ fn create_swapchain(window: &Window,
             .get_capabilities(&physical_device)
             .expect("failed to get surface capabilities");
 
+            
+
 
         let dimensions = if config.window.resolution[0] <= 240 ||
                             config.window.resolution[1] <= 240 {
-            caps.current_extent.unwrap_or([800, 600])
+
+            let min = caps.min_image_extent;
+
+            let extent = caps.current_extent.unwrap_or([800, 600]);
+
+            if extent[0] < min[0] || extent[1] < min[1] {
+                min
+            }
+            else {
+                extent
+            }
         } else {
             config.window.resolution
         };
