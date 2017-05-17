@@ -1,4 +1,9 @@
-mod events;
+/*!
+# Engine System
+
+
+*/
+mod input;
 
 use winit::{WindowBuilder, get_available_monitors, get_primary_monitor, Event, ElementState};
 use vulkano_win::{Window, VkSurfaceBuild, required_extensions};
@@ -14,6 +19,7 @@ use vulkano::format;
 use config::Config;
 use config::WindowConfig;
 
+use std::clone::Clone;
 use std::sync::Arc;
 use std::time::Duration;
 use std::collections::HashMap;
@@ -56,7 +62,7 @@ pub struct Engine {
     submissions: Vec<Arc<Submission>>,
     queue: Arc<Queue>,
     config: Config,
-    inputs: HashMap<String, (f32, u8)>,
+    inputs: input::InputSystem,
 }
 
 impl Engine {
@@ -139,11 +145,7 @@ impl Engine {
         let submissions = Vec::new();
 
         // Input System
-        let mut inputs: HashMap<String, (f32, u8)> = config
-            .input
-            .keys()
-            .map(|k| (k.clone(), (0.0, 0)))
-            .collect();
+        let mut inputs = input::InputSystem::new(&config);
 
         Engine {
             window: window,
@@ -165,35 +167,16 @@ impl Engine {
     /// Handles input/output events from the window and any input middleware.
     pub fn io(&mut self) -> bool {
 
-        println!("{:?}", self.inputs.clone());
+        //println!("{:?}", self.inputs.clone()); //fix        
 
         for ev in self.window.window().poll_events() {
 
-            // Axis Map
-            for (string_key, axis) in self.config.input.iter() {
-                for axis_value in axis {
-
-                    let out = events::string_to_wevent(&axis_value.key, &ev);
-
-                    // Check axis_value.meta for additional checks.
-
-
-                    // Write to axis map
-                    match out {
-                        Some(x) => {
-                            let mut hash_ref = self.inputs.get_mut(string_key).unwrap();
-                            *hash_ref = (x, 0);
-                            
-                            // Now we need some logic to make sure we're not masking inputs...
-                            },
-                        None => (),
-                    };
-
-                }
-            }
+            // Pass &ev to Input System
+            self.inputs.update(&ev); //fix
 
             // Core Events
-            match &ev {
+            match &ev
+            {
                 &Event::Resized(w, h) => {
                     self.config.window.resolution = [w, h];
                     let (swapchain, images) =
