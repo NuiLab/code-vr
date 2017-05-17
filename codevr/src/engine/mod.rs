@@ -56,7 +56,7 @@ pub struct Engine {
     submissions: Vec<Arc<Submission>>,
     queue: Arc<Queue>,
     config: Config,
-    inputs: HashMap<String, f32>,
+    inputs: HashMap<String, (f32, u8)>,
 }
 
 impl Engine {
@@ -139,10 +139,10 @@ impl Engine {
         let submissions = Vec::new();
 
         // Input System
-        let mut inputs: HashMap<String, f32> = config
+        let mut inputs: HashMap<String, (f32, u8)> = config
             .input
             .keys()
-            .map(|k| (k.clone(), 0.0f32))
+            .map(|k| (k.clone(), (0.0, 0)))
             .collect();
 
         Engine {
@@ -165,6 +165,8 @@ impl Engine {
     /// Handles input/output events from the window and any input middleware.
     pub fn io(&mut self) -> bool {
 
+        println!("{:?}", self.inputs.clone());
+
         for ev in self.window.window().poll_events() {
 
             // Axis Map
@@ -175,9 +177,15 @@ impl Engine {
 
                     // Check axis_value.meta for additional checks.
 
+
                     // Write to axis map
                     match out {
-                        Some(x) => *self.inputs.get_mut(string_key).unwrap() = x,
+                        Some(x) => {
+                            let mut hash_ref = self.inputs.get_mut(string_key).unwrap();
+                            *hash_ref = (x, 0);
+                            
+                            // Now we need some logic to make sure we're not masking inputs...
+                            },
                         None => (),
                     };
 
