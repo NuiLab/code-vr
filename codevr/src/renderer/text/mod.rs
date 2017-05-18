@@ -39,13 +39,16 @@ fn main() {
 */
 
 use vulkano::image::immutable::ImmutableImage;
+use std::collections::HashMap;
 
 struct TextBuilder {
 
 }
 
+type CharUVMap = HashMap<char, [f32; 2]>;
+
 impl TextBuilder {
-  pub fn new(msdf: u8, meta: Option<u8>) -> TextBuilder {
+  pub fn new(msdf: CharUVMap, meta: Option<u8>) -> TextBuilder {
     TextBuilder {}
   }
 
@@ -66,7 +69,7 @@ pub fn load_font(file_path: String, range: (u32, u32)) {
 }
 
 /// Takes a distance field image and places it in GPU memory, giving a handle to that texture
-fn push_dfimage(msdf: u8, cmd: vulkano::command_buffer::PrimaryCommandBufferBuilder) {
+fn push_dfimage(msdf: u8, cmd: u8) {
   //let texture = ImmutableImage::new();
   //cmd.copy_buffer_to_color_image();
 }

@@ -11,6 +11,7 @@ extern crate image;
 mod config;
 mod app;
 mod engine;
+mod renderer;
 
 fn main() {
 
