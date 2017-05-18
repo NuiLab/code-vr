@@ -6,6 +6,7 @@ extern crate serde_derive;
 extern crate vulkano;
 extern crate winit;
 extern crate vulkano_win;
+extern crate image;
 
 mod config;
 mod app;
