@@ -145,7 +145,7 @@ impl Engine {
         let submissions = Vec::new();
 
         // Input System
-        let mut inputs = input::InputSystem::new(&config);
+        let mut inputs = input::InputSystem::new(config.input.clone());
 
         Engine {
             window: window,
@@ -167,12 +167,12 @@ impl Engine {
     /// Handles input/output events from the window and any input middleware.
     pub fn io(&mut self) -> bool {
 
-        //println!("{:?}", self.inputs.clone()); //fix        
+        println!("{:?}", self.inputs.inputs.clone());      
 
         for ev in self.window.window().poll_events() {
 
             // Pass &ev to Input System
-            self.inputs.update(&ev); //fix
+            self.inputs.poll(&ev); 
 
             // Core Events
             match &ev
