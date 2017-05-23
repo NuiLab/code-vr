@@ -1,13 +1,12 @@
 /*!
-# Vulkano Glyphs
+# Vulkano Font Renderer
 
 A method of using multi-channel signed distance fields to render text in Vulkan, built on top of a fork of [msdfgen](https://github.com/Chlumsky/msdfgen).
 
 Given a:
-1. String
-2. msdf bitmap
-3. metadata of that bitmap (UTF8 char to vec2 hashmap, dimensions of characters)
-4. Optional Textbox (color, alignment, transformation) 
+1. msdf bitmap + metadata of that bitmap (UTF8 char to vec2 map, dimensions of characters)
+2. A UTF-8 String
+4. Transformation/Color data
 
 We generate a VBO, which can be drawn with our graphics pipeline implementation or your own.
 
@@ -16,22 +15,36 @@ We generate a VBO, which can be drawn with our graphics pipeline implementation 
 ```rust,ignore
 extern crate vulkano_glyphs;
 
-use vulkano_glyphs::{TextBuilder};
+use vulkano_glyphs::{TextRenderer};
 
 fn main() {
 
   // ... After initializing vulkan constructs
 
-  // Create a text builder
-  let builder = TextBuilder::new(msdf, None);
+  // Create a text renderer to handle 
+  // font textures/shaders/descriptor set layouts
 
-  // Start adding text
-  let cmds = builder
-      .text("Hello World!")
-      .text("Haha!")
-      .build();
+  let text_renderer = TextRenderer::new(device, queue);
 
-  queue.submit(cmds);
+
+  // Load font with path of file
+  // The renderer creates a msdf texture + char to vec2 map.
+
+  text_renderer.font("arial.ttf", "Arial", (32, 127));
+
+
+  // Send texture data to device memory, fences GPU memory.
+  text_renderer.allocate(cmd);
+
+  // Create a VBO Generator for your font
+  let builder = text_renderer.builder("Arial", cmd);
+
+  // Start creating VBOs + Command Buffer
+  // You recieve the VBO's lifetime
+  let vbo = builder.text("Hello World");
+
+  // Submit that command buffer to render that text.
+  queue.submit(cmd);
 
 }
 ```
@@ -39,37 +52,51 @@ fn main() {
 */
 
 use vulkano::image::immutable::ImmutableImage;
+use vulkano::buffer::{BufferUsage, DeviceLocalBuffer};
+use vulkano::sampler::Sampler;
+
+
 use std::collections::HashMap;
+use std::path::Path;
 
-struct TextBuilder {
+mod vs { include!{concat!(env!("OUT_DIR"), "/renderer/text/shaders/text_vs.glsl")} }
+mod fs { include!{concat!(env!("OUT_DIR"), "/renderer/text/shaders/text_fs.glsl")} }
 
+struct Font {
+  texture: Vec<u8>,
+  char_to_vec2: HashMap<char, [u16; 2]>,
+  char_size: [u8; 2]
 }
 
-type CharUVMap = HashMap<char, [f32; 2]>;
-
-impl TextBuilder {
-  pub fn new(msdf: CharUVMap, meta: Option<u8>) -> TextBuilder {
-    TextBuilder {}
-  }
-
-  /// Build VBO from string and TextBuilder data
-  pub fn text(string: String) {
-
-  }
-
-  /// Builds command buffers from text input.
-  pub fn build() {
-
-  }
+struct VulkanFont {
+  sampler: Sampler,
+  pipeline: u8,
+  vbo: Vec<f32>,
 }
 
-/// Convert a .ttf font to a distance field bitmap that can be cached or saved as an image.
-pub fn load_font(file_path: String, range: (u32, u32)) {
-  // @TODO, msdfgen ffi?
+pub struct TextRenderer {
+  fonts: HashMap<String, Font>
 }
 
-/// Takes a distance field image and places it in GPU memory, giving a handle to that texture
-fn push_dfimage(msdf: u8, cmd: u8) {
-  //let texture = ImmutableImage::new();
-  //cmd.copy_buffer_to_color_image();
+impl TextRenderer {
+
+  pub fn new(device: u8, queue: u8) -> TextRenderer {
+
+    // Create Frag/Vert vulkan data
+
+    TextRenderer {
+      fonts: HashMap::new()
+    }
+  }
+
+  /// Builds a font and adds it to the renderer.
+  pub fn font(path: String, name: String, char_range: (u16, u16)) {
+
+  }
+
+  /// Allocates all fonts in GPU memory.
+  pub fn allocate(cmd: u8) {
+
+  }
+
 }
