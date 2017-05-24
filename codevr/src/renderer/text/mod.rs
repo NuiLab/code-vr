@@ -63,6 +63,7 @@ mod vs { include!{concat!(env!("OUT_DIR"), "/renderer/text/shaders/text_vs.glsl"
 mod fs { include!{concat!(env!("OUT_DIR"), "/renderer/text/shaders/text_fs.glsl")} }
 
 struct Font {
+  handle: Option<ImmutableImage>
   texture: Vec<u8>,
   char_to_vec2: HashMap<char, [u16; 2]>,
   char_size: [u8; 2]
@@ -90,13 +91,29 @@ impl TextRenderer {
   }
 
   /// Builds a font and adds it to the renderer.
-  pub fn font(path: String, name: String, char_range: (u16, u16)) {
+  pub fn font(&mut self, path: String, name: String, char_range: (u16, u16)) {
 
+    //let font_img_buffer = msdfgen.run(path, char_range);
+    //let font = Font {
+      
+    //}
+    //self.fonts.insert(name, font);
   }
 
-  /// Allocates all fonts in GPU memory.
-  pub fn allocate(cmd: u8) {
+  /// Allocates all fonts in GPU memory. 
+  pub fn allocate(&mut self, cmd: u8) {
+    // Traverse local font store
+    for (string_key, font) in self.fonts.iter() {
+      match font {
+        Some(_) => continue,
+        None => {
+          // Send to queue, fence.
+          // self.queue.submit(cmd);
+          // self.queue.fence();
+          // font.handle = img;
+        }
 
+      }
   }
 
 }
