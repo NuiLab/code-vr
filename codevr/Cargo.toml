@@ -1,5 +1,5 @@
 [package]
-name = "code-vr"
+name = "codevr"
 version = "0.1.0"
 authors = ["Alain Galvan <hi@alain.xyz>"]
 build = "build.rs"
