@@ -5,12 +5,18 @@ authors = ["Alain Galvan <hi@alain.xyz>"]
 build = "build.rs"
 
 [dependencies]
+<<<<<<< HEAD
 image = "0.13.0"
 libloading = "0.3.4"
 openvr = "0.1.1"
 serde = "1.0.0"
 serde_derive = "1.0.0"
 serde_json = "1.0.0"
+=======
+serde = "1.0.6"
+serde_derive = "1.0.6"
+serde_json = "1.0.2"
+>>>>>>> d93467450865b936461e8acb8c226b6ae608058c
 vulkano = "0.3.2"
 vulkano-win = "0.3.2"
 winit = "0.5.2"
