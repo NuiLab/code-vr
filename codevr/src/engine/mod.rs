@@ -165,9 +165,7 @@ impl Engine {
     }
 
     /// Handles input/output events from the window and any input middleware.
-    pub fn io(&mut self) -> bool {
-
-        println!("{:?}", self.inputs.inputs.clone());      
+    pub fn io(&mut self) -> bool {     
 
         for ev in self.window.window().poll_events() {
 
