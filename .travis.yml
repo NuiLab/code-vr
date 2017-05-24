@@ -3,9 +3,6 @@ sudo: required
 language: rust
 rust:
   - nightly
-matrix:
-  allow_failures:
-    - rust: nightly
     
 before_install:
   - sudo apt-get update
