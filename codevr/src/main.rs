@@ -7,28 +7,29 @@ extern crate vulkano;
 extern crate winit;
 extern crate vulkano_win;
 extern crate image;
+extern crate cgmath;
 
-mod config;
-mod app;
 mod engine;
-mod renderer;
+mod app;
+
+use engine::{Engine, read_config};
+use app::App;
 
 fn main() {
 
     // Initialize app state
-    let state = config::read();
+    let state = read_config();
 
     // Initialize app tree
-    let app = app::App::new();
+    let app = App::new();
 
     // Start engine
-    let mut engine = engine::Engine::new(state/*, app*/);
+    let mut engine = Engine::new(state/*, app*/);
 
     // Render loop
     while engine.io()
     {
         engine.update();
-        engine.render();
     }
 
 }

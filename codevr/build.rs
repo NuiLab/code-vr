@@ -1,4 +1,5 @@
 extern crate curl;
+extern crate vulkano_shaders;
 
 use std::env;
 use std::fs;
@@ -73,7 +74,18 @@ fn fetch_openvr_sdk() {
     }
 }
 
+fn compile_spirv() {
+        // Compiling shaders to SPIR-V
+    vulkano_shaders::build_glsl_shaders([("src/engine/renderer/text/shaders/text_vs.glsl",
+                                          vulkano_shaders::ShaderType::Vertex),
+                                         ("src/engine/renderer/text/shaders/text_fs.glsl",
+                                          vulkano_shaders::ShaderType::Fragment)]
+                                                .iter()
+                                                .cloned());
+}
+
 fn main() {
     fetch_openvr_sdk();
+    compile_spirv();
 }
 

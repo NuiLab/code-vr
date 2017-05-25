@@ -1,5 +1,0 @@
-mod text;
-
-struct Renderer {
-  
-}
