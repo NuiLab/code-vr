@@ -62,10 +62,10 @@ use std::collections::HashMap;
 use std::path::Path;
 
 /// Core Text Vertex Shader
-pub mod vs { include!{concat!(env!("OUT_DIR"), "/shaders/src/engine/renderer/text/shaders/text_vs.glsl")} }
+pub mod vs { include!{concat!(env!("OUT_DIR"), "/shaders/src/renderer/gfx/text/shaders/text_vs.glsl")} }
 
 /// Core Text Fragment Sahder
-pub mod fs { include!{concat!(env!("OUT_DIR"), "/shaders/src/engine/renderer/text/shaders/text_fs.glsl")} }
+pub mod fs { include!{concat!(env!("OUT_DIR"), "/shaders/src/renderer/gfx/text/shaders/text_fs.glsl")} }
 
 /// Core Text Pipeline Layout
 /*

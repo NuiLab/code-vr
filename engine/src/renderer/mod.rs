@@ -1,4 +1,4 @@
-mod text;
+mod gfx;
 
 use winit::{WindowBuilder};
 use vulkano_win::{Window, VkSurfaceBuild, required_extensions};
@@ -14,7 +14,7 @@ use vulkano::format;
 use std::clone::Clone;
 use std::sync::Arc;
 use std::time::Duration;
-use engine::config::Config;
+use config::Config;
 
 mod render_pass {
 
@@ -221,8 +221,8 @@ fn create_swapchain(window: &Window,
             
 
 
-        let dimensions = if config.window.resolution[0] <= 240 ||
-                            config.window.resolution[1] <= 240 {
+        let dimensions = if config.window.resolution[0] <= 800 ||
+                            config.window.resolution[1] <= 600 {
 
             let min = caps.min_image_extent;
 

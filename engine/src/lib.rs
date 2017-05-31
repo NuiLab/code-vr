@@ -10,6 +10,16 @@ The engine for CodeVR is composed of a number of subsystems:
 With more incoming.
 
 */
+#[macro_use] extern crate serde_derive;
+#[macro_use] extern crate vulkano;
+extern crate cgmath;
+extern crate image;
+extern crate serde_json;
+extern crate serde;
+extern crate vulkano_win;
+extern crate winit;
+
+#[cfg(test)] mod tests;
 mod input;
 mod renderer;
 mod config;
@@ -40,7 +50,7 @@ pub struct Engine {
 
 impl Engine {
 
-    pub fn new(config: Config, scene: Vec<Arc<Actor>>) -> Engine {
+    pub fn new(config: Config, scene: Scene) -> Engine {
 
         let cfg = Arc::new(config.clone());
 
@@ -81,12 +91,14 @@ impl Engine {
         true
     }
 
-    /// Recursively updates application tree.
+    /// Updates the scene's actors.
     pub fn update(&mut self) {
 
         for mut actor in &mut self.scene {
             let a = Arc::get_mut(actor).unwrap();
+            // a.saturate(scene, input, physics_world, sound);
             a.update();
+            // a.render();
         }
 
         self.renderer.render();
@@ -130,12 +142,12 @@ fn create_window(config: &WindowConfig) -> WindowBuilder {
 }
 
 /// Starts the CodeVR Game Engine
-pub fn bootstrap(app: Scene) {
+pub fn bootstrap(scene: Scene) {
     // Initialize app state
     let config = read_config();
 
     // Start engine
-    let mut engine = Engine::new(config, app);
+    let mut engine = Engine::new(config, scene);
 
     // Render loop
     while engine.io()

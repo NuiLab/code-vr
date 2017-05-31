@@ -7,7 +7,7 @@ This module takes care of all input events processed by the engine
 mod events;
 
 use winit::Event;
-use engine::config::Config;
+use config::Config;
 use std::clone::Clone;
 use std::collections::HashMap;
 use std::sync::Arc;

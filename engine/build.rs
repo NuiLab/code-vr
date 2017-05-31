@@ -56,6 +56,8 @@ fn fetch_openvr_sdk() {
         download.push_str("/");
         download.push_str(file.as_str());
 
+        println!("{:?}", file_path.clone());
+
         // Fetch the file from GitHub
         let mut open = fs::OpenOptions::new()
             .read(true)
@@ -76,9 +78,9 @@ fn fetch_openvr_sdk() {
 
 fn compile_spirv() {
         // Compiling shaders to SPIR-V
-    vulkano_shaders::build_glsl_shaders([("src/engine/renderer/text/shaders/text_vs.glsl",
+    vulkano_shaders::build_glsl_shaders([("src/renderer/gfx/text/shaders/text_vs.glsl",
                                           vulkano_shaders::ShaderType::Vertex),
-                                         ("src/engine/renderer/text/shaders/text_fs.glsl",
+                                         ("src/renderer/gfx/text/shaders/text_fs.glsl",
                                           vulkano_shaders::ShaderType::Fragment)]
                                                 .iter()
                                                 .cloned());
