@@ -13,31 +13,34 @@ With more incoming.
 mod input;
 mod renderer;
 mod config;
+mod actor;
 
 use winit::{WindowBuilder, get_available_monitors, get_primary_monitor, Event};
 use vulkano_win::Window;
 
 use std::clone::Clone;
 use std::sync::Arc;
-use std::time::Duration;
-use std::collections::HashMap;
 
-pub use self::config::read as read_config;
+pub use self::actor::Actor;
 use self::config::Config;
+use self::config::read as read_config;
 use self::config::WindowConfig;
 use self::input::InputSystem;
 use self::renderer::Renderer;
+
+pub type Scene = Vec<Arc<Actor>>;
 
 pub struct Engine {
     config: Arc<Config>,
     window: Arc<Window>,
     renderer: Renderer,
-    inputs: InputSystem
+    inputs: InputSystem,
+    scene: Scene
 }
 
 impl Engine {
 
-    pub fn new(config: Config) -> Engine {
+    pub fn new(config: Config, scene: Vec<Arc<Actor>>) -> Engine {
 
         let cfg = Arc::new(config.clone());
 
@@ -50,6 +53,7 @@ impl Engine {
             renderer,
             config: cfg,
             inputs,
+            scene
         }
     }
 
@@ -65,7 +69,8 @@ impl Engine {
             match &ev
             {
                 &Event::Resized(w, h) => {
-                    //self.config.window.resolution = [w, h];
+                    let mut config_ref = Arc::get_mut(&mut self.config).unwrap();
+                    config_ref.window.resolution = [w, h];
                     self.renderer.resize();
                 }
                 &Event::Closed => return false,
@@ -79,7 +84,10 @@ impl Engine {
     /// Recursively updates application tree.
     pub fn update(&mut self) {
 
-        // @TODO - Traverse Scene Graph
+        for mut actor in &mut self.scene {
+            let a = Arc::get_mut(actor).unwrap();
+            a.update();
+        }
 
         self.renderer.render();
     }
@@ -119,4 +127,19 @@ fn create_window(config: &WindowConfig) -> WindowBuilder {
 
 
     window_manager
+}
+
+/// Starts the CodeVR Game Engine
+pub fn bootstrap(app: Scene) {
+    // Initialize app state
+    let config = read_config();
+
+    // Start engine
+    let mut engine = Engine::new(config, app);
+
+    // Render loop
+    while engine.io()
+    {
+        engine.update();
+    }
 }

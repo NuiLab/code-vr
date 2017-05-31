@@ -1,35 +1,19 @@
-extern crate serde;
-extern crate serde_json;
-#[macro_use]
-extern crate serde_derive;
-#[macro_use]
-extern crate vulkano;
-extern crate winit;
-extern crate vulkano_win;
-extern crate image;
+#[macro_use] extern crate serde_derive;
+#[macro_use] extern crate vulkano;
 extern crate cgmath;
+extern crate image;
+extern crate serde_json;
+extern crate serde;
+extern crate vulkano_win;
+extern crate winit;
 
 mod engine;
 mod app;
+#[cfg(test)] mod tests;
 
-use engine::{Engine, read_config};
-use app::App;
+use engine::bootstrap;
+use app::app;
 
 fn main() {
-
-    // Initialize app state
-    let state = read_config();
-
-    // Initialize app tree
-    let app = App::new();
-
-    // Start engine
-    let mut engine = Engine::new(state/*, app*/);
-
-    // Render loop
-    while engine.io()
-    {
-        engine.update();
-    }
-
+    bootstrap(app());
 }

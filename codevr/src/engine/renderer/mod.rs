@@ -1,6 +1,6 @@
 mod text;
 
-use winit::{WindowBuilder, get_available_monitors, get_primary_monitor, Event, ElementState};
+use winit::{WindowBuilder};
 use vulkano_win::{Window, VkSurfaceBuild, required_extensions};
 use vulkano::instance::{Instance, PhysicalDevice};
 use vulkano::device::{Queue, Device, DeviceExtensions};
@@ -14,7 +14,6 @@ use vulkano::format;
 use std::clone::Clone;
 use std::sync::Arc;
 use std::time::Duration;
-use std::collections::HashMap;
 use engine::config::Config;
 
 mod render_pass {

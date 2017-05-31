@@ -13,7 +13,6 @@ pub use self::input::{InputConfig, default_input};
 
 use std::fs;
 use std::env;
-use std::path::Path;
 
 use serde_json;
 
