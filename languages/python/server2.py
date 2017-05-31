@@ -30,7 +30,7 @@ path = ("./")
 _lsremote = "ls-remote"
 files = [f for f in os.listdir('.') if os.path.isfile(f)]
  
-HOST = ''   # Symbolic name meaning all available interfaces
+HOST = '127.0.0.1'   # Symbolic name meaning all available interfaces
 PORT = int(sys.argv[1]) # Arbitrary non-privileged port
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -51,8 +51,8 @@ print('Socket now listening')
  
 #Function for handling connections. This will be used to create threads
 def clientthread(conn):
-    #Sending message to connected client
-    # conn.send('Connected, type !help for command list:\n') #send only takes string
+    # Sending message to connected client
+    # conn.send('Connected, type !help for command list:\n'.encode('ascii')) #send only takes string
      
     #infinite loop so that function do not terminate and thread do not end.
     while True:
@@ -63,7 +63,8 @@ def clientthread(conn):
         # telnet sends dirty strings, t = data.isalnum() to check. clean if using telnet
 
         # we split data at the first white space. first word is opcode, second is file
-        _data = data.decode('ascii').split(" ", 1)
+        # _data = data.split(" ", 1)
+        _data = data
 
         #----ls-remote----#
         if(data == _lsremote):
