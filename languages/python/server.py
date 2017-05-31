@@ -11,7 +11,7 @@ def listen():
     while True:
         current_connection, address = connection.accept()
         while True:
-            data = current_connection.recv(2048)
+            data = current_connection.recv(1024)
 
             if data == 'quit\r\n':
                 current_connection.shutdown(1)
@@ -24,9 +24,12 @@ def listen():
                 exit()
 
             elif data:
-                current_connection.send(data)
-                print(data)
-
+                print("from client: ", address)
+                decoded_data = data.decode('ascii')
+                data_upper = decoded_data.upper()
+                print("received: ", decoded_data)
+                print("uppercase: ", decoded_data.upper())
+                current_connection.send(data_upper.encode('ascii'))
 
 if __name__ == "__main__":
     try:
