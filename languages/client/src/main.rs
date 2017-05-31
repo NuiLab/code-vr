@@ -12,16 +12,19 @@ use std::time::Duration;
 
 //const HOST: &'static str = "127.0.0.1:5555";
 
-fn send_one_command(command: &str, mut stream: &TcpStream) -> Result<String, Box<error::Error + Send + Sync>> {
+fn check_file(command: &str, mut stream: &TcpStream) -> Result<String, Box<error::Error + Send + Sync>> {
+    //prepare buffer
     let mut command_bytes = try!(ASCII.encode(command, EncoderTrap::Strict).map_err(|x| x.into_owned()));
-    command_bytes.push('\r' as u8); // ending escape sequence    
+    command_bytes.push('\r' as u8);            //ending escape sequence    
 
-    stream.write_all(&command_bytes).unwrap();
+    stream.write_all(&command_bytes).unwrap(); //write to stream (send path)
 
-    sleep(Duration::from_millis(2)); //disgusting solution; program should wait until stream it ready.
+    sleep(Duration::from_millis(2));           //disgusting solution;
+                                               //program should wait until stream is ready
+
     let mut response = String::new();
-    let mut limited = stream.take(1024);
-    limited.read_to_string(&mut response); //unwrap() causes it to panic
+    let mut limited = stream.take(1024);       //read from stream (receive)
+    limited.read_to_string(&mut response);     //unwrap() causes this to panic
 
     if response.is_empty()
     {
@@ -32,7 +35,6 @@ fn send_one_command(command: &str, mut stream: &TcpStream) -> Result<String, Box
 }
 
 fn main() {
-
     //setup connection:
     //let mut stream = TcpStream::connect("127.0.0.1:5555")
     let stream = TcpStream::connect("127.0.0.1:5555") // try!(TcpStream::connect(HOST));
@@ -48,7 +50,7 @@ fn main() {
             let command = line.unwrap();
             println!("message: {}", command);
 
-            match send_one_command(&command, &stream){
+            match check_file(&command, &stream){
                 Ok(response) => println!("response: {}", response),
                 Err(err) => println!("An error occurred: {}", err),
             }

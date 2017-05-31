@@ -2,6 +2,7 @@
 # www.solusipse.net
 
 import socket
+import os
 
 def listen():
     connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -17,22 +18,15 @@ def listen():
         while True:
             data = current_connection.recv(1024)
 
-            '''
-            if decoded_data == "quit":
-                current_connection.shutdown(1)
-                current_connection.close()
-                break
-
-            elif decoded_data == "stop":
-                current_connection.shutdown(1)
-                current_connection.close()
-                exit()
-            '''
-
-            # elif
             if data: # if data is present
                 # decode it
                 decoded_data = data.decode('ascii')
+
+                # check if file exists in file path
+                path = str(decoded_data)
+                #if os.path.isfile(f): # if file exists
+                    # call astexport module on file
+                    # send the json content to the client
 
                 # check if it is a command
                 if decoded_data == "quit\r":
