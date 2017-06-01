@@ -1,7 +1,7 @@
 pub trait Actor {
 
   /// Called when adding the actor to the scene, you can access the engine state.
-  fn start(&mut self) {
+  fn start(&mut self, engine: u32) {
 
   }
   /// Update the state of the Actor and check engine state

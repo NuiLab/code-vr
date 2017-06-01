@@ -10,6 +10,7 @@ The engine for CodeVR is composed of a number of subsystems:
 With more incoming.
 
 */
+
 #[macro_use] extern crate serde_derive;
 #[macro_use] extern crate vulkano;
 extern crate cgmath;
@@ -82,7 +83,7 @@ impl Engine {
                     let mut config_ref = Arc::get_mut(&mut self.config).unwrap();
                     config_ref.window.resolution = [w, h];
                     self.renderer.resize();
-                }
+                },
                 &Event::Closed => return false,
                 _ => (),
             };
@@ -94,11 +95,14 @@ impl Engine {
     /// Updates the scene's actors.
     pub fn update(&mut self) {
 
+        // @TODO - Check scene for destroyed or created elements.
+        // Call their respective lifetime functions.
+        // actor.start(engine);
+        // actor.on_destroy();
+
         for mut actor in &mut self.scene {
             let a = Arc::get_mut(actor).unwrap();
-            // a.saturate(scene, input, physics_world, sound);
             a.update();
-            // a.render();
         }
 
         self.renderer.render();

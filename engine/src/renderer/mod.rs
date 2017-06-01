@@ -177,7 +177,8 @@ impl Renderer {
     }
 
     pub fn render(&mut self) {
-                let command_buffers = self.framebuffers
+        // @TODO - For each node in gfxstate
+        let command_buffers = self.framebuffers
             .iter()
             .map(|framebuffer| {
                 PrimaryCommandBufferBuilder::new(&self.device, self.queue.family())

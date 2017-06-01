@@ -87,7 +87,7 @@ fn compile_spirv() {
 }
 
 fn main() {
-    fetch_openvr_sdk();
+    //fetch_openvr_sdk();
     compile_spirv();
 }
 

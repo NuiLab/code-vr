@@ -14,10 +14,10 @@ impl Player {
 }
 
 impl Actor for Player {
-
+  /*
   fn start(&mut self) {
-    /*
-    let Engine { gfx } = self.engine();
+
+    let EngineState { gfx } = engine;
 
     // Add reference to camera
 
@@ -26,9 +26,11 @@ impl Actor for Player {
         ...
       }
     ));
-    */
-  }
 
+    self
+
+  }
+  */
   fn update(&mut self) {
     println!("Updating the player");
     /*
@@ -48,9 +50,4 @@ impl Actor for Player {
     }
     */
   }
-  /*
-  fn render(&mut self, gfx: GraphicsState) {
-
-  }
-  */
 }

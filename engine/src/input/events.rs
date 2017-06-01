@@ -1,4 +1,4 @@
-use winit::{Event, VirtualKeyCode, ElementState, MouseButton};
+use winit::{ Event, VirtualKeyCode, ElementState, MouseButton };
 
 // @TODO - We need a better way of abstracting this.
 pub fn string_to_wevent(s: &String, event: &Event) -> Option<f32> {
