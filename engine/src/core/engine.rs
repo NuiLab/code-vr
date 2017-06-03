@@ -10,14 +10,14 @@ use input::InputSystem;
 use renderer::Renderer;
 use core::Scene;
 
-const MINIMUM_RESOLUTION: [u32; 2] = [640, 480];
+pub const MINIMUM_RESOLUTION: [u32; 2] = [640, 480];
 
 pub struct Engine {
     pub config: Arc<Config>,
-    window: Arc<Window>,
-    pub renderer: Renderer,
+    pub scene: Scene,
     pub inputs: Arc<InputSystem>,
-    scene: Scene,
+    pub renderer: Renderer,
+    pub window: Arc<Window>
 }
 
 impl Engine {
@@ -64,7 +64,7 @@ impl Engine {
         true
     }
 
-    /// Updates the scene's actors.
+    /// Updates engine subsystems.
     pub fn update(&mut self) {
         // Update actors
         self.scene.update(&self.config, &self.renderer.gfx, &self.inputs);

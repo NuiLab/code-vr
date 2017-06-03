@@ -35,27 +35,28 @@ impl RenderState {
         } = props;
 
         let view = Matrix4::look_at(
-          Point3::new(to[0], to[1], to[2]), 
+          Point3::new(from[0], from[1], from[2]), 
           Point3::new(to[0], to[1], to[2]),
-          Vector3::new(0., 1., 0.)
+          Vector3::new(0.0, 1.0, 0.0)
         );
 
         let projection = match projection_mode {
 
-            ProjectionMode::Orthographic => {
+            ProjectionMode::Perspective => {
               // @TODO - fetch aspect ratio from window
               // Update camera aspect ratio in graphics state traversal.
-              perspective(Deg(fov), 1.66, 1., 10000.)
+              perspective(Deg(fov), 1.6, 1.0, 10000.)
             },
             
-            ProjectionMode::Perspective => {
-              ortho(2., 2., 2., 2., 2., 2.)
+            ProjectionMode::Orthographic => {
+              ortho(2.0, 2.0, 2.0, 2.0, 1.0, 10000.)
             }
         };
 
-        self.cameras.push(Camera {
-          view,
-          projection
-        })
+        self.cameras.push(
+            Camera {
+                view,
+                projection
+                })
     }
 }

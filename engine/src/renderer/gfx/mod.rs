@@ -2,7 +2,7 @@
 # CodeVR Graphics
 
 CodeVR is powered by a data driven renderer. Actors in the engine add graphics objects 
-to the RenderState, which generate vulkan data structures and can be mutated by actors.
+to the RenderState, which generate vulkan data structures that can be mutated by actors.
 
 The renderer then traverses the render state, and generates command buffers that are
 sent to Vulkan's rendering queue.
@@ -27,12 +27,14 @@ mod camera;
 mod mesh;
 mod text;
 
+use vulkano_win::{Window};
 use std::sync::Arc;
 use config::Config;
 use self::camera::Camera;
 
 pub struct RenderState {
   config: Arc<Config>,
+  window: Arc<Window>,
   buffers: Vec<u32>,
   buffer_views: Vec<u32>,
   images: Vec<u32>,
@@ -45,9 +47,10 @@ pub struct RenderState {
 }
 
 impl RenderState {
-  pub fn new(config: Arc<Config>) -> RenderState {
+  pub fn new(config: Arc<Config>, window: Arc<Window>) -> RenderState {
     RenderState {
       config,
+      window,
       buffers: Vec::new(),
       buffer_views: Vec::new(),
       images: Vec::new(),
@@ -57,13 +60,6 @@ impl RenderState {
       cameras: Vec::new(),
       nodes: Vec::new(),
       meshes: Vec::new(),
-    }
-  }
-
-  pub fn render(&mut self)  {
-    for camera in self.cameras {
-      // Set a camera descriptor set with it's data...
-      
     }
   }
 }

@@ -14,8 +14,10 @@ use vulkano::format;
 use std::clone::Clone;
 use std::sync::Arc;
 use std::time::Duration;
+
 use config::Config;
 pub use self::gfx::RenderState;
+use core::MINIMUM_RESOLUTION;
 
 mod render_pass {
 
@@ -54,8 +56,8 @@ pub struct Renderer {
     render_pass: Arc<render_pass::CustomRenderPass>,
     framebuffers: Vec<Arc<Framebuffer<render_pass::CustomRenderPass>>>,
     submissions: Vec<Arc<Submission>>,
-    pub gfx: Arc<RenderState>,
-    queue: Arc<Queue>
+    queue: Arc<Queue>,
+    pub gfx: Arc<RenderState>
 }
 
 impl Renderer {
@@ -145,8 +147,11 @@ impl Renderer {
             submissions,
             queue,
             window: window.clone(),
-            config,
-            gfx: Arc::new(RenderState::new())
+            gfx: Arc::new(RenderState::new(
+                config.clone(),
+                window.clone()
+            )),
+            config
         }, window)
     }
 
@@ -184,7 +189,7 @@ impl Renderer {
         let command_buffers = self.framebuffers
             .iter()
             .map(|framebuffer| {
-                PrimaryCommandBufferBuilder::new(&self.device, self.queue.family())
+                let cmd = PrimaryCommandBufferBuilder::new(&self.device, self.queue.family())
                     .draw_inline(&self.render_pass,
                                  &framebuffer,
                                  render_pass::ClearValues {
@@ -192,7 +197,9 @@ impl Renderer {
                                      depth: 1.0,
                                  })
                     .draw_end()
-                    .build()
+                    .build();
+                    // renderstate.render(cmd)
+                    cmd
             })
             .collect::<Vec<_>>();
         let image_num = self.swapchain
@@ -225,12 +232,12 @@ fn create_swapchain(window: &Window,
             
 
 
-        let dimensions = if config.window.resolution[0] <= 800 ||
-                            config.window.resolution[1] <= 600 {
+        let dimensions = if config.window.resolution[0] <= MINIMUM_RESOLUTION[0] ||
+                            config.window.resolution[1] <= MINIMUM_RESOLUTION[1] {
 
             let min = caps.min_image_extent;
 
-            let extent = caps.current_extent.unwrap_or([800, 600]);
+            let extent = caps.current_extent.unwrap_or(MINIMUM_RESOLUTION);
 
             if extent[0] < min[0] || extent[1] < min[1] {
                 min

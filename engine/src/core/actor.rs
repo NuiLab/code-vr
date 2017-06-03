@@ -6,6 +6,7 @@ pub trait Actor {
   fn start(&mut self, engine: EngineState) {
 
   }
+
   /// Update the state of the Actor and check engine state
   fn update(&mut self) {
 
