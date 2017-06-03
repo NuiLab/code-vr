@@ -27,9 +27,12 @@ mod camera;
 mod mesh;
 mod text;
 
+use std::sync::Arc;
+use config::Config;
 use self::camera::Camera;
 
-struct RenderState {
+pub struct RenderState {
+  config: Arc<Config>,
   buffers: Vec<u32>,
   buffer_views: Vec<u32>,
   images: Vec<u32>,
@@ -42,22 +45,25 @@ struct RenderState {
 }
 
 impl RenderState {
-
-  /// Creates a camera
-  pub fn camera() {
-
+  pub fn new(config: Arc<Config>) -> RenderState {
+    RenderState {
+      config,
+      buffers: Vec::new(),
+      buffer_views: Vec::new(),
+      images: Vec::new(),
+      textures: Vec::new(),
+      shaders: Vec::new(),
+      pipelines: Vec::new(),
+      cameras: Vec::new(),
+      nodes: Vec::new(),
+      meshes: Vec::new(),
+    }
   }
 
-  pub fn buffer() {
-
+  pub fn render(&mut self)  {
+    for camera in self.cameras {
+      // Set a camera descriptor set with it's data...
+      
+    }
   }
-
-  pub fn shader() {
-
-  }
-
-  pub fn node() {
-
-  }
-
 }

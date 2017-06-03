@@ -15,6 +15,7 @@ use std::clone::Clone;
 use std::sync::Arc;
 use std::time::Duration;
 use config::Config;
+pub use self::gfx::RenderState;
 
 mod render_pass {
 
@@ -53,6 +54,7 @@ pub struct Renderer {
     render_pass: Arc<render_pass::CustomRenderPass>,
     framebuffers: Vec<Arc<Framebuffer<render_pass::CustomRenderPass>>>,
     submissions: Vec<Arc<Submission>>,
+    pub gfx: Arc<RenderState>,
     queue: Arc<Queue>
 }
 
@@ -143,7 +145,8 @@ impl Renderer {
             submissions,
             queue,
             window: window.clone(),
-            config
+            config,
+            gfx: Arc::new(RenderState::new())
         }, window)
     }
 
