@@ -16,11 +16,61 @@ def listen():
         print('Connected with ' + address[0] + ':' + str(address[1]))
 
         while True:
-            data = current_connection.recv(1024)
 
+            # accumulator
+            acu = ""
+
+            # receive message size
+            size = current_connection.recv(8)
+
+            if size: # if received message size
+                decoded_size = size.decode('ascii')
+                print("receiving %s bytes" % decoded_size)
+                remainingData = int(decoded_size)
+
+                while remainingData != 0:
+                    if remainingData >= 8 : # slab >= 8 byte buffer
+                        # receive slab from client
+                        slab = current_connection.recv(8)
+                        acu = acu + slab.decode('ascii')
+                        sizeofSlabReceived = len(slab)
+                        print("wrote %d bytes" % len (slab))
+                        remainingData = remainingData - int(sizeofSlabReceived)
+                    else:
+                        # receive slab from client
+                        slab = current_connection.recv(remainingData)
+                        acu = acu + slab.decode('ascii')
+                        sizeofSlabReceived = len(slab)
+                        print("wrote %d bytes" % len (slab))
+                        remainingData = remainingData - int(sizeofSlabReceived)
+            
+            print("received: ", acu)
+            
+            if acu != "":
+                # make msg upper case
+                acu = acu.upper()
+
+                print("sending: ", acu)
+
+
+                # send message size
+                responseSize = len(acu)
+                print("sending %d bytes" % responseSize)
+                sizeS = str(responseSize)
+                current_connection.send(sizeS.encode('ascii'))
+                
+                # encode it
+                encoded_acu = acu.encode('ascii')
+
+                # send message:
+                current_connection.send(encoded_acu)
+
+
+            '''
             if data: # if data is present
                 # decode it
                 decoded_data = data.decode('ascii')
+                print("length: ", len(decoded_data))
 
                 # check if file exists in file path
                 path = str(decoded_data)
@@ -38,12 +88,28 @@ def listen():
 
                 # make it upper case
                 data_upper = decoded_data.upper()
+
                 # encode it again
                 encoded_data = data_upper.encode('ascii')
+
+                # check to add EOF
+                #if len(decoded_data) < 8: 
+                    #print("adding EOF");
+                    #encoded_data += b'\x04'
+                    
                 print("received: ", decoded_data)
                 print("uppercase: ", data_upper)
-                # send it
+
+                # send message size:
+                size = len(decoded_data)
+                print("sending a message of size ", size)
+                sizeS = str(size)
+                current_connection.send(sizeS.encode('ascii'))
+
+                # send message:
                 current_connection.send(encoded_data)
+
+                '''
 
 if __name__ == "__main__":
     try:
