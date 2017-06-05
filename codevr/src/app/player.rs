@@ -1,13 +1,13 @@
 use engine::{Actor, EngineState};
 use engine::gfx::{Camera, CameraProps, ProjectionMode};
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 /// A Player in the CodeVR scene, handles its own movement and editing the CodeVR scene.
 pub struct Player {
     // Local State
     health: [i32; 2],
     // Engine State
-    camera: Option<Arc<Camera>>,
+    camera: Option<Arc<Mutex<Camera>>>,
     engine: Option<EngineState>,
 }
 
@@ -24,19 +24,18 @@ impl Player {
 
 /// Actor Logic
 impl Actor for Player {
-
     // Mount engine state
     fn start(&mut self, mut engine: EngineState) {
 
         {
-        // Add reference to camera
-        let mut gfx = engine.gfx.lock().unwrap();
-        self.camera = Some(gfx.camera(CameraProps {
-                                        projection_mode: ProjectionMode::Perspective,
-                                        to: [4., 4., 4.],
-                                        from: [0., 0., 0.],
-                                        fov: 75.0,
-                                    }));
+            // Add reference to camera
+            let mut gfx = engine.gfx.lock().unwrap();
+            self.camera = Some(gfx.camera(CameraProps {
+                                              projection_mode: ProjectionMode::Perspective,
+                                              to: [4., 4., 4.],
+                                              from: [0., 0., 0.],
+                                              fov: 75.0,
+                                          }));
         }
 
         self.engine = Some(engine);
@@ -54,11 +53,17 @@ impl Actor for Player {
             }
 
             // Check inputs
-            let cam_x = engine.input_axis(String::from("look_right"));
-            let cam_y = engine.input_axis(String::from("look_up"));
-            //self.camera.unwrap().rotate(cam_x, cam_y, 0.);
+            if let Some(ref mut camera) = self.camera {
+                let cam_x = engine.input_axis(String::from("move_right"));
+                let cam_y = engine.input_axis(String::from("move_forward"));
+                if let Ok(mut cam) = camera.lock() {
+                    cam.rotate([cam_x, cam_y, 0.]);
+                }
+            }
+
 
         }
 
     }
 }
+

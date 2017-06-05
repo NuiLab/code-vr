@@ -1,7 +1,7 @@
 use renderer::GraphicsState;
-use cgmath::{perspective, ortho, Vector3, Point3, Deg};
+use cgmath::{perspective, ortho, Vector3, Point3, Deg, Quaternion, Euler};
 use cgmath::Matrix4;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 pub enum ProjectionMode {
     Perspective,
@@ -21,12 +21,15 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn rotate(euler: [f32; 3]) {}
+    pub fn rotate(&mut self, euler: [f32; 3]) {
+        let rot = Matrix4::from(Euler::new(Deg(euler[0]), Deg(euler[1]), Deg(euler[2])));
+        self.view = rot * self.view;
+    }
 }
 
 impl GraphicsState {
     /// Creates a camera
-    pub fn camera(&mut self, props: CameraProps) -> Arc<Camera> {
+    pub fn camera(&mut self, props: CameraProps) -> Arc<Mutex<Camera>> {
 
         let CameraProps {
             projection_mode,
@@ -50,7 +53,7 @@ impl GraphicsState {
             ProjectionMode::Orthographic => ortho(2.0, 2.0, 2.0, 2.0, 1.0, 10000.),
         };
         
-        let camera = Arc::new(Camera { view, projection });
+        let camera = Arc::new(Mutex::new(Camera { view, projection }));
 
         self.cameras.push(camera.clone());
 

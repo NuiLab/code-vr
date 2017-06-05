@@ -166,34 +166,12 @@ impl Renderer {
     }
 
     pub fn render(&mut self, gfx: &GraphicsState) {
-        /*
-        // @TODO - For each node in gfxstate
-        let command_buffers = self.framebuffers
-            .iter()
-            .map(|framebuffer| {
-                let cmd = PrimaryCommandBufferBuilder::new(&self.device, self.queue.family())
-                    .draw_inline(&self.render_pass,
-                                 &framebuffer,
-                                 render_pass::ClearValues {
-                                     color: [0.2, 0.4, 0.8, 1.0],
-                                     depth: 1.0,
-                                 }) 
-                    .draw_end()
-                    .build();
-                    // renderstate.render(cmd)
-                    cmd
-            })
-            .collect::<Vec<_>>();
-        let image_num = self.swapchain
-            .acquire_next_image(Duration::new(1, 0))
-            .unwrap();
+        for camera in &gfx.cameras {
+            if let Ok(cam) = camera.lock() {
+                println!("{:?}", cam.view);
+            }
+        }
 
-        // @TODO build command buffers with threads and submit the changes in main thread (here)
-        self.submissions
-            .push(submit(&command_buffers[image_num], &self.queue).unwrap());
-
-        self.swapchain.present(&self.queue, image_num).unwrap();
-        */
     }
 }
 

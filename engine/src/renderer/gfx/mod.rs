@@ -28,7 +28,7 @@ mod mesh;
 mod text;
 
 use vulkano_win::{Window};
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use config::Config;
 pub use self::camera::*;
 
@@ -40,7 +40,7 @@ pub struct GraphicsState {
   pub textures: Vec<u32>,
   pub shaders: Vec<u32>,
   pub pipelines: Vec<u32>,
-  pub cameras: Vec<Arc<Camera>>,
+  pub cameras: Vec<Arc<Mutex<Camera>>>,
   pub nodes: Vec<u32>,
   pub meshes: Vec<u32>,
 }
