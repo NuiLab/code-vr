@@ -1,11 +1,7 @@
 [package]
-name = "client"
+name = "codevr-python"
 version = "0.1.0"
 authors = ["lborg019 <lukasborges@gmail.com>"]
 
 [dependencies]
 encoding = "0.2"
-websocket = "0.20.1"
-futures = "0.1.14"
-tokio-core = "0.1.7"
-byteorder = "1.0.0"

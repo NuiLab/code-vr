@@ -1,8 +1,6 @@
 extern crate encoding;
-extern crate byteorder;
 
 use std::{error}; //{env, error}
-use std::io::prelude::*;
 use std::net::TcpStream;
 use encoding::{Encoding, EncoderTrap};
 use encoding::all::ASCII;
@@ -26,7 +24,7 @@ fn check_file(command: &str, mut stream: &mut TcpStream) -> Result<String, Box<e
 
     println!("sending {} bytes", string_size);
 
-    let mut string_size_str = string_size.to_string();
+    let string_size_str = string_size.to_string();
 
     //encode buffer to send size
     let mut string_size_bytes =  try!(ASCII.encode(&string_size_str, EncoderTrap::Strict).map_err(|x| x.into_owned()));
@@ -174,10 +172,7 @@ fn main() {
     //let mut stream = TcpStream::connect("127.0.0.1:5555")
     let mut stream = TcpStream::connect("127.0.0.1:5555") // try!(TcpStream::connect(HOST));
                                 .expect("Couldn't connect to the server...");
-
-    //make stream nonblocking
-    //stream.set_nonblocking(true).expect("set_nonblocking call failed");
-
+                                
     loop {
         println!("Type command:");
         let stdin = io::stdin();
