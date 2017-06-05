@@ -8,6 +8,9 @@ use encoding::{Encoding, EncoderTrap};
 use encoding::all::ASCII;
 use std::io;
 use std::str;
+use std::io::prelude::*;
+use std::io::BufWriter;
+use std::fs::File;
 
 fn check_file(command: &str, mut stream: &mut TcpStream) -> Result<String, Box<error::Error + Send + Sync>> {
 
@@ -77,52 +80,89 @@ fn check_file(command: &str, mut stream: &mut TcpStream) -> Result<String, Box<e
 
     println!("receiving {} bytes", msg_len_str);
 
-    //receive actual message:
     let mut remaining_data = msg_len_str.parse::<i32>().unwrap();
-
     let mut accumulator: String = String::new();
-    let mut r = [0u8; 8]; //standard buffer
+    let mut r = [0u8; 8]; //8 byte buffer
 
-    while remaining_data != 0
+    if remaining_data > 260 //big message; write to file
     {
-        if remaining_data >= 8 //slab >= 8 byte buffer
+        //create a file
+        let mut file_buffer = BufWriter::new(File::create("covfefe.json")?);
+
+        while remaining_data != 0
         {
-            let slab = stream.read(&mut r);
-            match slab {
-                Ok(n) => {                    
-                    let r_slice = str::from_utf8(&mut r).unwrap(); //string slice
-                    accumulator.push_str(r_slice);
-                    println!("wrote {} bytes", n);
-                    remaining_data = remaining_data - n as i32;
+            if remaining_data >= 8 //slab >= 8 byte buffer
+            {
+                let slab = stream.read(&mut r);
+                match slab {
+                    Ok(n) => {                    
+                        file_buffer.write(&mut r)?;
+                        file_buffer.flush()?;
+                        println!("wrote {} bytes to file", n);
+                        remaining_data = remaining_data - n as i32;
+                    }
+                    _ => {},
                 }
-                _ => {},
+            }
+            else //slab < 8 byte buffer
+            {
+                let array_limit = (remaining_data as i32) - 1;
+                let slab = stream.read(&mut r);
+                match slab {
+                    Ok(n) => {
+                        let mut r_slice = &r[0..(array_limit as usize)];
+                        file_buffer.write(&mut r_slice)?;
+                        file_buffer.flush()?;
+                        println!("wrote {} bytes to file", n);
+                        remaining_data = remaining_data - n as i32;
+                    }
+                    _ => {},
+                }
             }
         }
-        /*
-        option 1) receive and read a smaller buffer
-        option 2) receive and read same buffer; truncate it to the smaller slab size
-
-        since we cannot instantiate an array with a non-constant:
-            e.g.: let mut r = [0u8; remainingData];
-        it is better to just put the byte in the 8 byte buffer, and shrink it with
-        .truncate() method before pushing to the String
-        */
-        else //slab < 8 byte buffer
+        accumulator.push_str("response written to file");
+    }
+    else{ //small message; receive as string
+        while remaining_data != 0
         {
-            let slab = stream.read(&mut r);
-            match slab {
-                Ok(n) => {
-                    let s_slice = str::from_utf8(&mut r).unwrap(); //string slice
-                    let mut s_str = s_slice.to_string(); //convert slice to string
-                    s_str.truncate(n);
-                    accumulator.push_str(&s_str);
-                    println!("wrote {} bytes", n);
-                    remaining_data = remaining_data - n as i32;
+            if remaining_data >= 8 //slab >= 8 byte buffer
+            {
+                let slab = stream.read(&mut r);
+                match slab {
+                    Ok(n) => {                    
+                        let r_slice = str::from_utf8(&mut r).unwrap(); //string slice
+                        accumulator.push_str(r_slice);
+                        println!("wrote {} bytes", n);
+                        remaining_data = remaining_data - n as i32;
+                    }
+                    _ => {},
                 }
-                _ => {},
+            }
+            /*
+            option 1) receive and read a smaller buffer
+            option 2) receive and read same buffer; truncate it to the smaller slab size
+
+            since we cannot instantiate an array with a non-constant:
+                e.g.: let mut r = [0u8; remainingData];
+            it is better to just put the byte in the 8 byte buffer, and shrink it with
+            .truncate() method before pushing to the String
+            */
+            else //slab < 8 byte buffer
+            {
+                let slab = stream.read(&mut r);
+                match slab {
+                    Ok(n) => {
+                        let s_slice = str::from_utf8(&mut r).unwrap(); //string slice
+                        let mut s_str = s_slice.to_string(); //convert slice to string
+                        s_str.truncate(n);
+                        accumulator.push_str(&s_str);
+                        println!("wrote {} bytes", n);
+                        remaining_data = remaining_data - n as i32;
+                    }
+                    _ => {},
+                }
             }
         }
-
     }
 
     let response = accumulator;

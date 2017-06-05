@@ -134,53 +134,6 @@ def listen():
 
                     # send message:
                     current_connection.send(encoded_acu)
-            
-
-
-            '''
-            if data: # if data is present
-                # decode it
-                decoded_data = data.decode('ascii')
-                print("length: ", len(decoded_data))
-
-                # check if file exists in file path
-                path = str(decoded_data)
-                #if os.path.isfile(f): # if file exists
-                    # call astexport module on file
-                    # send the json content to the client
-
-                # check if it is a command
-                if decoded_data == "quit\r":
-                    print("received: quit, ending sesh")
-                    current_connection.send(data)
-                    current_connection.shutdown(1)
-                    current_connection.close()
-                    exit(1)
-
-                # make it upper case
-                data_upper = decoded_data.upper()
-
-                # encode it again
-                encoded_data = data_upper.encode('ascii')
-
-                # check to add EOF
-                #if len(decoded_data) < 8: 
-                    #print("adding EOF");
-                    #encoded_data += b'\x04'
-                    
-                print("received: ", decoded_data)
-                print("uppercase: ", data_upper)
-
-                # send message size:
-                size = len(decoded_data)
-                print("sending a message of size ", size)
-                sizeS = str(size)
-                current_connection.send(sizeS.encode('ascii'))
-
-                # send message:
-                current_connection.send(encoded_data)
-
-                '''
 
 if __name__ == "__main__":
     try:
