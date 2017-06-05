@@ -20,12 +20,14 @@ fn check_file(command: &str, mut stream: &mut TcpStream) -> Result<String, Box<e
     //get string size (in bytes)
     let mut string_size = command.len();
     string_size = string_size + 1;
+
     println!("sending {} bytes", string_size);
 
-    let string_size_str = string_size.to_string();
+    let mut string_size_str = string_size.to_string();
 
-    //prepare buffer to send size
-    let string_size_bytes =  try!(ASCII.encode(&string_size_str, EncoderTrap::Strict).map_err(|x| x.into_owned()));
+    //encode buffer to send size
+    let mut string_size_bytes =  try!(ASCII.encode(&string_size_str, EncoderTrap::Strict).map_err(|x| x.into_owned()));
+    string_size_bytes.push('\r' as u8);
 
     //prepare buffer to send message itself
     let mut command_bytes = try!(ASCII.encode(command, EncoderTrap::Strict).map_err(|x| x.into_owned()));
@@ -34,11 +36,19 @@ fn check_file(command: &str, mut stream: &mut TcpStream) -> Result<String, Box<e
     //send message size:
     stream.write_all(&string_size_bytes).unwrap();
 
+    //receive message size ACK:
+    let mut ack_buf = [0u8; 8];
+    stream.read(&mut ack_buf).unwrap();
+    let ack_slice: &str = str::from_utf8(&mut ack_buf).unwrap(); //string slice
+    let ack_str = ack_slice.to_string(); //convert slice to string
+    println!("{}: server ackd", ack_str);
+
+
     //send file path
     stream.write_all(&command_bytes).unwrap();
 
     //receive message length:
-    let mut buf = [0u8; 8]; //make it bigger
+    let mut buf = [0u8; 8]; //make it bigger if necessary
     stream.read(&mut buf).unwrap();
 
     //interpret the buffer contents into a string slice

@@ -24,7 +24,19 @@ def listen():
             size = current_connection.recv(8)
 
             if size: # if received message size
-                decoded_size = size.decode('ascii')
+                
+                print("for message size we received: %s" % size)
+
+                # send ACK
+                print("sending back message size ACK")
+                ack = "ACK"
+                current_connection.send(ack.encode('ascii'))
+
+                # prepare to receive message
+                decoded_message = size.decode('ascii')
+                delim = decoded_message.find('\r')
+                decoded_size = decoded_message[:delim]
+                
                 print("receiving %s bytes" % decoded_size)
                 remainingData = int(decoded_size)
 
