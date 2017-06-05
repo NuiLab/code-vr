@@ -1,22 +1,23 @@
 use renderer::GraphicsState;
-use cgmath::{perspective, ortho, Rad, Vector3, Point3, Deg};
+use cgmath::{perspective, ortho, Vector3, Point3, Deg};
 use cgmath::Matrix4;
+use std::sync::Arc;
 
-enum ProjectionMode {
+pub enum ProjectionMode {
     Perspective,
     Orthographic,
 }
 
 pub struct CameraProps {
-    projection_mode: ProjectionMode,
-    to: [f32; 3],
-    from: [f32; 3],
-    fov: f32,
+    pub projection_mode: ProjectionMode,
+    pub to: [f32; 3],
+    pub from: [f32; 3],
+    pub fov: f32,
 }
 
 pub struct Camera {
-  view: Matrix4<f32>,
-  projection: Matrix4<f32>
+  pub view: Matrix4<f32>,
+  pub projection: Matrix4<f32>
 }
 
 impl Camera {
@@ -25,7 +26,7 @@ impl Camera {
 
 impl GraphicsState {
     /// Creates a camera
-    pub fn camera(&mut self, props: CameraProps) {
+    pub fn camera(&mut self, props: CameraProps) -> Arc<Camera> {
 
         let CameraProps {
             projection_mode,

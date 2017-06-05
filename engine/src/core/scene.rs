@@ -8,7 +8,7 @@ use std::sync::Arc;
 pub struct Scene {
     pub created: Vec<Arc<Actor>>,
     pub active: Vec<Arc<Actor>>,
-    //pub destroy: Vec<Fn(&Actor) -> bool>,
+    //pub destroy: Vec<Fn(u64) -> bool>,
 }
 
 impl Scene {
@@ -51,7 +51,7 @@ impl Scene {
             let a = Arc::get_mut(actor).unwrap();
             a.update();
         }
-
+        
         // @TODO - Faster algorithm/data structure
         //while let Some(actor_killer) = self.destroy.pop() {
         //    for actor in self.active {

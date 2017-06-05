@@ -11,6 +11,7 @@ use renderer::Renderer;
 use core::Scene;
 use renderer::GraphicsState;
 
+/// The minimum window resolution the engine supports.
 pub const MINIMUM_RESOLUTION: [u32; 2] = [640, 480];
 
 /// Game Engine
@@ -68,20 +69,19 @@ impl Engine {
 
         let mut done = false;
 
-        self.events_loop.poll_events(|ev| {
+        self.events_loop.clone().poll_events(|ev| {
 
             // Pass &ev to Input System
-            //let inputs = Arc::get_mut(&mut self.inputs).unwrap();
-            //inputs.poll(&ev);
+            let inputs = Arc::get_mut(&mut self.inputs).unwrap();
+            inputs.poll(&ev);
 
             // Core Events
             match ev {
-			/*
                 Event::WindowEvent { event: WindowEvent::Resized(w, h), .. } => {
                     let mut config_ref = Arc::get_mut(&mut self.config).unwrap();
                     config_ref.window.resolution = [w, h];
                     self.renderer.resize();
-                },*/
+                },
                Event::WindowEvent { event: WindowEvent::Closed, .. } => done = true,
                 _ => (),
             };

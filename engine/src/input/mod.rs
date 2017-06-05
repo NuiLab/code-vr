@@ -1,8 +1,8 @@
 /*!
 # Input Module
 
-This module takes care of all input events processed by the engine
-
+This module takes care of all input events processed by the engine.
+It's modeled similarly to the axis system in Unreal Engine 4.
 */
 mod events;
 
@@ -24,7 +24,7 @@ impl InputSystem {
     
     pub fn new(config: Arc<Config>) -> InputSystem {
 
-        let mut inputs: HashMap<String, f32> =
+        let inputs: HashMap<String, f32> =
             config.input.keys().map(|k| (k.clone(), 0.0)).collect();
 
         InputSystem {
@@ -38,7 +38,7 @@ impl InputSystem {
         // Axis Map
         for (string_key, axis) in self.config.input.iter() {
     
-            for (i, axis_value) in axis.iter().enumerate() {
+            for axis_value in axis {
 
                 let out = events::string_to_wevent(&axis_value.key, &ev);
 

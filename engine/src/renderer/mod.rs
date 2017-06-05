@@ -1,4 +1,4 @@
-mod gfx;
+pub mod gfx;
 
 use winit::{WindowBuilder, EventsLoop};
 use vulkano_win::{Window, VkSurfaceBuild, required_extensions};
@@ -91,7 +91,7 @@ impl Renderer {
 
         // Swapchain, Swapchain Images
         let (swapchain, images) =
-            create_swapchain(&window, &physical, &device, &queue, None, &config);
+            create_swapchain(&window, physical, &device, &queue, None, &config);
 
         let depth_buffer = AttachmentImage::transient(device.clone(), images[0].dimensions(), format::D16Unorm).unwrap();
 
@@ -149,7 +149,7 @@ impl Renderer {
     pub fn resize(&mut self) {
                     let (swapchain, images) =
                         create_swapchain(&self.window, 
-                                         &PhysicalDevice::from_index(&self.instance, self.physical_device).unwrap(),
+                                         PhysicalDevice::from_index(&self.instance, self.physical_device).unwrap(),
                                          &self.device,
                                          &self.queue,
                                          Some(&self.swapchain),
@@ -200,7 +200,7 @@ impl Renderer {
 
 /// Sets up and creates a swapchain
 fn create_swapchain(window: &Window,
-                    physical_device: &PhysicalDevice,
+                    physical_device: PhysicalDevice,
                     device: &Arc<Device>,
                     queue: &Arc<Queue>,
                     old: Option<&Arc<Swapchain>>,
@@ -209,7 +209,7 @@ fn create_swapchain(window: &Window,
     {
         let caps = window
             .surface()
-            .get_capabilities(&physical_device)
+            .capabilities(physical_device)
             .expect("failed to get surface capabilities");
 
             

@@ -30,7 +30,7 @@ mod text;
 use vulkano_win::{Window};
 use std::sync::Arc;
 use config::Config;
-use self::camera::Camera;
+pub use self::camera::*;
 
 /// Centralized Graphics Store
 pub struct GraphicsState {

@@ -27,6 +27,7 @@ mod config;
 mod core;
 
 pub use self::core::*;
+pub use self::renderer::gfx;
 
 /// Starts the CodeVR Game Engine
 pub fn bootstrap(scene: Scene) {

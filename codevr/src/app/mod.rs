@@ -9,7 +9,7 @@ use std::sync::Arc;
 pub fn app() -> Scene {
   Scene::new(
     vec![
-    Player::new()
+    Arc::new(Player::new())
     ]
   )
 }
