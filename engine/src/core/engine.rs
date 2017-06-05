@@ -2,7 +2,7 @@ use winit::{WindowBuilder, get_available_monitors, get_primary_monitor, Event, W
 use vulkano_win::Window;
 
 use std::clone::Clone;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 use config::Config;
 use config::WindowConfig;
@@ -18,25 +18,25 @@ pub const MINIMUM_RESOLUTION: [u32; 2] = [640, 480];
 pub struct Engine {
 
     /// Engine Configuration
-    pub config: Arc<Config>,
+    config: Arc<Config>,
 
     /// Actor Scene Graph
-    pub scene: Scene,
+    scene: Scene,
 
     /// Input Mappings
-    pub inputs: Arc<InputSystem>,
+    inputs: Arc<Mutex<InputSystem>>,
 
     /// API Specific Renderer
-    pub renderer: Renderer,
+    renderer: Renderer,
 
     /// Graphics Data Structures
-    pub gfx: Arc<GraphicsState>,
+    gfx: Arc<Mutex<GraphicsState>>,
 
     /// OS Window
-    pub window: Arc<Window>,
+    window: Arc<Window>,
 
     /// OS Events
-    pub events_loop: Arc<EventsLoop>
+    events_loop: Arc<EventsLoop>
 
 }
 
@@ -49,9 +49,9 @@ impl Engine {
 
         let (renderer, window, events_loop) = Renderer::new(create_window(&config.window), cfg.clone());
 
-        let inputs = Arc::new(InputSystem::new(cfg.clone()));
+        let inputs = Arc::new(Mutex::new(InputSystem::new(cfg.clone())));
 
-        let gfx = Arc::new(GraphicsState::new());
+        let gfx = Arc::new(Mutex::new(GraphicsState::new()));
 
         Engine {
             window,
@@ -67,12 +67,13 @@ impl Engine {
     /// Handles input/output events from the window and any input middleware.
     pub fn io(&mut self) -> bool {
 
-        let mut done = false;
+        let mut running = true;
 
         self.events_loop.clone().poll_events(|ev| {
 
             // Pass &ev to Input System
-            let inputs = Arc::get_mut(&mut self.inputs).unwrap();
+
+            let mut inputs = self.inputs.lock().unwrap();
             inputs.poll(&ev);
 
             // Core Events
@@ -82,20 +83,24 @@ impl Engine {
                     config_ref.window.resolution = [w, h];
                     self.renderer.resize();
                 },
-               Event::WindowEvent { event: WindowEvent::Closed, .. } => done = true,
+               Event::WindowEvent { event: WindowEvent::Closed, .. } => running = false,
                 _ => (),
             };
         });
 
-        done
+        running
     }
 
     /// Updates engine subsystems.
     pub fn update(&mut self) {
+        
         // Update actors
         self.scene.update(&self.config, &self.gfx, &self.inputs);
+
+        // Grab lock for graphics state
+        let gfx = self.gfx.lock().unwrap();
         // Render graphics state
-        self.renderer.render(&self.gfx);
+        self.renderer.render(&gfx);
     }
 }
 

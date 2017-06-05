@@ -40,7 +40,7 @@ pub struct GraphicsState {
   pub textures: Vec<u32>,
   pub shaders: Vec<u32>,
   pub pipelines: Vec<u32>,
-  pub cameras: Vec<Camera>,
+  pub cameras: Vec<Arc<Camera>>,
   pub nodes: Vec<u32>,
   pub meshes: Vec<u32>,
 }

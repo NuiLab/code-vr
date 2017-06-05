@@ -3,7 +3,7 @@ use core::EngineState;
 use config::Config;
 use input::InputSystem;
 use renderer::GraphicsState;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 pub struct Scene {
     pub created: Vec<Arc<Actor>>,
@@ -26,7 +26,7 @@ impl Scene {
     }
 
     // Updates the scene. Spawns new actors, updates current actors, and destroys other actors.
-    pub fn update(&mut self, config: &Arc<Config>, gfx: &Arc<GraphicsState>, input: &Arc<InputSystem>) {
+    pub fn update(&mut self, config: &Arc<Config>, gfx: &Arc<Mutex<GraphicsState>>, input: &Arc<Mutex<InputSystem>>) {
 
         while let Some(mut new_actor) = self.created.pop() {
 
@@ -34,13 +34,7 @@ impl Scene {
             {
                 let a = Arc::get_mut(&mut new_actor).unwrap();
 
-                a.start(
-                    EngineState {
-                        id: 0, // @TODO - Generate Hash
-                        config: config.clone(),
-                        gfx: gfx.clone(),
-                        input: input.clone()
-                });
+                a.start(EngineState::new(0, config.clone(), input.clone(), gfx.clone()));
             }        
                
             self.active.push(new_actor);

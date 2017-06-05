@@ -7,7 +7,7 @@ pub struct Player {
     // Local State
     health: [i32; 2],
     // Engine State
-    camera: Option<Camera>,
+    camera: Option<Arc<Camera>>,
     engine: Option<EngineState>,
 }
 
@@ -26,24 +26,27 @@ impl Player {
 impl Actor for Player {
 
     // Mount engine state
-    fn start(&mut self, engine: EngineState) {
+    fn start(&mut self, mut engine: EngineState) {
+
+        {
+        // Add reference to camera
+        let mut gfx = engine.gfx.lock().unwrap();
+        self.camera = Some(gfx.camera(CameraProps {
+                                        projection_mode: ProjectionMode::Perspective,
+                                        to: [4., 4., 4.],
+                                        from: [0., 0., 0.],
+                                        fov: 75.0,
+                                    }));
+        }
 
         self.engine = Some(engine);
-
-        // Add reference to camera
-        self.camera = Some(self.engine.unwrap().gfx.camera(CameraProps {
-                                                               projection_mode: ProjectionMode::Perspective,
-                                                               to: [4., 4., 4.],
-                                                               from: [0., 0., 0.],
-                                                               fov: 75.0,
-                                                           }));
 
     }
 
     // Update Engine State
     fn update(&mut self) {
 
-        if let Some(engine) = self.engine {
+        if let Some(ref mut engine) = self.engine {
 
             // Destroy self if we're out of health
             if self.health[0] < 1 {
