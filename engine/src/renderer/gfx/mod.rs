@@ -7,7 +7,7 @@ to the RenderState, which generate vulkan data structures that can be mutated by
 The renderer then traverses the render state, and generates command buffers that are
 sent to Vulkan's rendering queue.
 
-An actor accesses the `gfx` state from their `.engine()` accessor method, and calls
+An actor accesses the `gfx` state from their EngineState struct, and calls
 methods that return shared pointers to the resource that they can mutate.
 
 ```
@@ -32,25 +32,22 @@ use std::sync::Arc;
 use config::Config;
 use self::camera::Camera;
 
-pub struct RenderState {
-  config: Arc<Config>,
-  window: Arc<Window>,
-  buffers: Vec<u32>,
-  buffer_views: Vec<u32>,
-  images: Vec<u32>,
-  textures: Vec<u32>,
-  shaders: Vec<u32>,
-  pipelines: Vec<u32>,
-  cameras: Vec<Camera>,
-  nodes: Vec<u32>,
-  meshes: Vec<u32>,
+/// Centralized Graphics Store
+pub struct GraphicsState {
+  pub buffers: Vec<u32>,
+  pub buffer_views: Vec<u32>,
+  pub images: Vec<u32>,
+  pub textures: Vec<u32>,
+  pub shaders: Vec<u32>,
+  pub pipelines: Vec<u32>,
+  pub cameras: Vec<Camera>,
+  pub nodes: Vec<u32>,
+  pub meshes: Vec<u32>,
 }
 
-impl RenderState {
-  pub fn new(config: Arc<Config>, window: Arc<Window>) -> RenderState {
-    RenderState {
-      config,
-      window,
+impl GraphicsState {
+  pub fn new() -> GraphicsState {
+    GraphicsState {
       buffers: Vec::new(),
       buffer_views: Vec::new(),
       images: Vec::new(),

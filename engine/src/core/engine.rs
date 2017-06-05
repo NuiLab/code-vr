@@ -1,4 +1,4 @@
-use winit::{WindowBuilder, get_available_monitors, get_primary_monitor, Event};
+use winit::{WindowBuilder, get_available_monitors, get_primary_monitor, Event, WindowEvent, EventsLoop};
 use vulkano_win::Window;
 
 use std::clone::Clone;
@@ -9,29 +9,54 @@ use config::WindowConfig;
 use input::InputSystem;
 use renderer::Renderer;
 use core::Scene;
+use renderer::GraphicsState;
 
 pub const MINIMUM_RESOLUTION: [u32; 2] = [640, 480];
 
+/// Game Engine
 pub struct Engine {
+
+    /// Engine Configuration
     pub config: Arc<Config>,
+
+    /// Actor Scene Graph
     pub scene: Scene,
+
+    /// Input Mappings
     pub inputs: Arc<InputSystem>,
-    pub renderer: Renderer,
-    pub window: Arc<Window>
+
+    /// API Specific Renderer
+    pub renderer: Arc<Renderer>,
+
+    /// Graphics Data Structures
+    pub gfx: Arc<GraphicsState>,
+
+    /// OS Window
+    pub window: Arc<Window>,
+
+    /// OS Events
+    pub events_loop: Arc<EventsLoop>
+
 }
 
 impl Engine {
+
+    /// Initialize Engine subsystems
     pub fn new(config: Config, scene: Scene) -> Engine {
 
         let cfg = Arc::new(config.clone());
 
-        let (renderer, window) = Renderer::new(create_window(&config.window), cfg.clone());
+        let (renderer, window, events_loop) = Renderer::new(create_window(&config.window), cfg.clone());
 
         let inputs = Arc::new(InputSystem::new(cfg.clone()));
 
+        let gfx = Arc::new(GraphicsState::new());
+
         Engine {
             window,
+            events_loop,
             renderer,
+            gfx,
             config: cfg,
             inputs,
             scene,
@@ -41,7 +66,9 @@ impl Engine {
     /// Handles input/output events from the window and any input middleware.
     pub fn io(&mut self) -> bool {
 
-        for ev in self.window.window().poll_events() {
+        let mut done = false;
+
+        self.events_loop.poll_events(|ev| {
 
             // Pass &ev to Input System
             let inputs = Arc::get_mut(&mut self.inputs).unwrap();
@@ -49,27 +76,25 @@ impl Engine {
 
             // Core Events
             match &ev {
-
-                &Event::Resized(w, h) => {
+                &Event::WindowEvent { event: WindowEvent::Resized(w, h), .. } => {
                     let mut config_ref = Arc::get_mut(&mut self.config).unwrap();
                     config_ref.window.resolution = [w, h];
                     self.renderer.resize();
-                }
-
-                &Event::Closed => return false,
+                },
+               &Event::WindowEvent { event: WindowEvent::Closed, .. } => done = true,
                 _ => (),
             };
-        }
+        });
 
-        true
+        done
     }
 
     /// Updates engine subsystems.
     pub fn update(&mut self) {
         // Update actors
-        self.scene.update(&self.config, &self.renderer.gfx, &self.inputs);
+        self.scene.update(&self.config, &self.gfx, &self.inputs);
         // Render graphics state
-        self.renderer.render();
+        self.renderer.render(&self.gfx);
     }
 }
 

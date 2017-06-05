@@ -2,7 +2,7 @@ use core::Actor;
 use core::EngineState;
 use config::Config;
 use input::InputSystem;
-use renderer::RenderState;
+use renderer::GraphicsState;
 use std::sync::Arc;
 
 pub struct Scene {
@@ -26,7 +26,7 @@ impl Scene {
     }
 
     // Updates the scene. Spawns new actors, updates current actors, and destroys other actors.
-    pub fn update(&mut self, config: &Arc<Config>, gfx: &Arc<RenderState>, input: &Arc<InputSystem>) {
+    pub fn update(&mut self, config: &Arc<Config>, gfx: &Arc<GraphicsState>, input: &Arc<InputSystem>) {
 
         while let Some(mut new_actor) = self.created.pop() {
 

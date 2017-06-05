@@ -1,89 +1,78 @@
 mod gfx;
 
-use winit::{WindowBuilder};
+use winit::{WindowBuilder, EventsLoop};
 use vulkano_win::{Window, VkSurfaceBuild, required_extensions};
-use vulkano::instance::{Instance, PhysicalDevice};
+use vulkano::command_buffer::CommandBufferBuilder;
 use vulkano::device::{Queue, Device, DeviceExtensions};
-use vulkano::swapchain::{Swapchain, SurfaceTransform, PresentMode};
-use vulkano::image::SwapchainImage;
-use vulkano::image::attachment::AttachmentImage;
-use vulkano::framebuffer::Framebuffer;
-use vulkano::command_buffer::{PrimaryCommandBufferBuilder, Submission, submit};
 use vulkano::format;
+use vulkano::framebuffer::{RenderPass, RenderPassAbstract, Framebuffer, FramebufferAbstract};
+use vulkano::image::attachment::{AttachmentImageAccess, AttachmentImage};
+use vulkano::image::SwapchainImage;
+use vulkano::instance::{Instance, PhysicalDevice};
+use vulkano::memory::pool::StdMemoryPoolAlloc;
+use vulkano::swapchain::{Swapchain, SurfaceTransform, PresentMode};
+use vulkano::sync::GpuFuture;
 
 use std::clone::Clone;
 use std::sync::Arc;
 use std::time::Duration;
 
 use config::Config;
-pub use self::gfx::RenderState;
+pub use self::gfx::GraphicsState;
 use core::MINIMUM_RESOLUTION;
 
-mod render_pass {
+type FinalFramebuffer = Framebuffer<Arc<RenderPassAbstract + Send + Sync>, (((), Arc<SwapchainImage>), AttachmentImageAccess<format::D16Unorm, StdMemoryPoolAlloc>)>;
 
-    use vulkano::format;
-    use vulkano::format::Format;
-
-    single_pass_renderpass!{
-    attachments: {
-        color: {
-            load: Clear,
-            store: Store,
-            format: Format,
-        },
-        depth: {
-            load: Clear,
-            store: DontCare,
-            format: format::D16Unorm,
-            }
-        },
-        pass: {
-            color: [color],
-            depth_stencil: {depth}
-        }
-    }
-}
-
+/// Handles the rendering of the graphics state.
 pub struct Renderer {
+
+    /// Engine configuration
     config: Arc<Config>,
+
+    /// Current Window
     window: Arc<Window>,
+
+    // Vulkan API
     instance: Arc<Instance>,
     physical_device: usize,
     device: Arc<Device>,
     swapchain: Arc<Swapchain>,
     images: Vec<Arc<SwapchainImage>>,
     depth_buffer: Arc<AttachmentImage<format::D16Unorm>>,
-    render_pass: Arc<render_pass::CustomRenderPass>,
-    framebuffers: Vec<Arc<Framebuffer<render_pass::CustomRenderPass>>>,
-    submissions: Vec<Arc<Submission>>,
-    queue: Arc<Queue>,
-    pub gfx: Arc<RenderState>
+    render_pass: Arc<RenderPassAbstract + Send + Sync>,
+    framebuffers: Vec<Arc<FinalFramebuffer>>,
+    queue: Arc<Queue>
+
 }
 
 impl Renderer {
-    pub fn new(window_builder: WindowBuilder, config: Arc<Config>) -> (Renderer, Arc<Window>) {
+
+    pub fn new(window_builder: WindowBuilder, config: Arc<Config>) -> (Arc<Renderer>, Arc<Window>, Arc<EventsLoop>) {
         
+        // Create Vulkan Instance, Physical Device
         let instance = {
             let extensions = required_extensions();
-            Instance::new(None, &extensions, None).expect("Failed to create Vulkan instance.")
+            Instance::new(None, &extensions, &[]).expect("Failed to create Vulkan instance.")
         };
-
-        let ins = &instance.clone();
-
+		let ins = instance.clone();
+		
         let physical = PhysicalDevice::enumerate(&ins)
             .next()
             .expect("No vulkan device is available.");
 
         let physical_device = physical.index();
 
-        let window = Arc::new(window_builder.build_vk_surface(&instance).unwrap());
+        // Create Window
+        let events_loop = EventsLoop::new();
+        let window = Arc::new(window_builder.build_vk_surface(&events_loop, instance.clone()).unwrap());
 
+        // Queue ID for Device generation
         let queue = physical
             .queue_families()
-            .find(|q| q.supports_graphics() && window.surface().is_supported(q).unwrap_or(false))
+            .find(|&q| q.supports_graphics() && window.surface().is_supported(q).unwrap_or(false))
             .expect("Couldn't find a graphical queue family.");
 
-        // Logical Device, Queues
+        // Logical Device
         let (device, mut queues) = {
             let device_ext = DeviceExtensions {
                 khr_swapchain: true,
@@ -104,55 +93,57 @@ impl Renderer {
         let (swapchain, images) =
             create_swapchain(&window, &physical, &device, &queue, None, &config);
 
-        let depth_buffer =
-            AttachmentImage::transient(&device, images[0].dimensions(), format::D16Unorm).unwrap();
+        let depth_buffer = AttachmentImage::transient(device.clone(), images[0].dimensions(), format::D16Unorm).unwrap();
 
         // Render Pass
-        let render_pass =
-            render_pass::CustomRenderPass::new(&device,
-                                               &render_pass::Formats {
-                                                    // Use the format of the images and one sample.
-                                                    color: (images[0].format(), 1),
-                                                    depth: (format::D16Unorm, 1),
-                                                })
-                    .unwrap();
+        let render_pass: Arc<RenderPassAbstract + Send + Sync> = Arc::new(
+        single_pass_renderpass!(device.clone(),
+            attachments: {
+                color: {
+                    load: Clear,
+                    store: Store,
+                    format: swapchain.format(),
+                    samples: 1,
+                },
+                depth: {
+                    load: Clear,
+                    store: DontCare,
+                    format: format::Format::D16Unorm,
+                    samples: 1,
+                }
+            },
+            pass: {
+                color: [color],
+                depth_stencil: {depth}
+            }
+        ).unwrap()
+    );
 
-        let framebuffers = images
-            .iter()
-            .map(|image| {
-                let attachments = render_pass::AList {
-                    color: &image,
-                    depth: &depth_buffer,
-                };
 
-                Framebuffer::new(&render_pass,
-                                 [image.dimensions()[0], image.dimensions()[1], 1],
-                                 attachments)
-                        .unwrap()
-            })
-            .collect::<Vec<_>>();
+    let framebuffers = images.iter().map(|image| {
+        Arc::new(Framebuffer::start(render_pass.clone())
+            .add(image.clone()).unwrap()
+            .add(depth_buffer.clone()).unwrap()
+            .build().unwrap())
+    }).collect::<Vec<_>>();
 
-        // Queue Submissions
-        let submissions = Vec::new();
-
-        (Renderer {
-            instance,
-            physical_device,
-            device,
-            swapchain,
-            images,
-            depth_buffer,
-            framebuffers,
-            render_pass,
-            submissions,
-            queue,
-            window: window.clone(),
-            gfx: Arc::new(RenderState::new(
-                config.clone(),
-                window.clone()
-            )),
-            config
-        }, window)
+        (
+            Arc::new(Renderer {
+                config,
+                window: window.clone(),
+                instance,
+                physical_device,
+                device,
+                swapchain,
+                images,
+                depth_buffer,
+                framebuffers,
+                render_pass,
+                queue
+            }),
+            window,
+            Arc::new(events_loop)
+        )
     }
 
     pub fn resize(&mut self) {
@@ -164,27 +155,18 @@ impl Renderer {
                                          Some(&self.swapchain),
                                          &self.config);
                     self.swapchain = swapchain;
-                    self.images = images;
-                    self.depth_buffer = AttachmentImage::transient(&self.device,
-                                                                   self.images[0].dimensions(),
-                                                                   format::D16Unorm).unwrap();
-                    self.framebuffers = self.images
-                        .iter()
-                        .map(|image| {
-                            let attachments = render_pass::AList {
-                                color: &image,
-                                depth: &self.depth_buffer,
-                            };
-
-                            Framebuffer::new(&self.render_pass,
-                                             [image.dimensions()[0], image.dimensions()[1], 1],
-                                             attachments)
-                                    .unwrap()
-                        })
-                        .collect::<Vec<_>>();
+                    self.depth_buffer = AttachmentImage::transient(self.device.clone(), images[0].dimensions(), format::D16Unorm).unwrap();
+					self.images = images;
+                    self.framebuffers = self.images.iter().map(|image| {
+                        Arc::new(Framebuffer::start(self.render_pass.clone())
+                            .add(image.clone()).unwrap()
+                            .add(self.depth_buffer.clone()).unwrap()
+                            .build().unwrap())
+                    }).collect::<Vec<_>>();
     }
 
-    pub fn render(&mut self) {
+    pub fn render(&mut self, gfx: &GraphicsState) {
+        /*
         // @TODO - For each node in gfxstate
         let command_buffers = self.framebuffers
             .iter()
@@ -195,7 +177,7 @@ impl Renderer {
                                  render_pass::ClearValues {
                                      color: [0.2, 0.4, 0.8, 1.0],
                                      depth: 1.0,
-                                 })
+                                 }) 
                     .draw_end()
                     .build();
                     // renderstate.render(cmd)
@@ -211,6 +193,7 @@ impl Renderer {
             .push(submit(&command_buffers[image_num], &self.queue).unwrap());
 
         self.swapchain.present(&self.queue, image_num).unwrap();
+        */
     }
 }
 
@@ -261,13 +244,13 @@ fn create_swapchain(window: &Window,
 
         let format = caps.supported_formats[0].0;
 
-        Swapchain::new(&device,
-                       &window.surface(),
+        Swapchain::new(device.clone(),
+                       window.surface().clone(),
                        caps.min_image_count,
                        format,
                        dimensions,
                        1,
-                       &caps.supported_usage_flags,
+                       caps.supported_usage_flags,
                        queue,
                        SurfaceTransform::Identity,
                        alpha,

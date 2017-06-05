@@ -1,4 +1,4 @@
-use renderer::RenderState;
+use renderer::GraphicsState;
 use cgmath::{perspective, ortho, Rad, Vector3, Point3, Deg};
 use cgmath::Matrix4;
 
@@ -23,7 +23,7 @@ impl Camera {
     pub fn rotate(euler: [f32; 3]) {}
 }
 
-impl RenderState {
+impl GraphicsState {
     /// Creates a camera
     pub fn camera(&mut self, props: CameraProps) {
 
