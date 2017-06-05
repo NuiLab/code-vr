@@ -1,32 +1,12 @@
-extern crate serde;
-extern crate serde_json;
-#[macro_use]
-extern crate serde_derive;
-#[macro_use]
-extern crate vulkano;
-extern crate winit;
-extern crate vulkano_win;
+extern crate engine;
 
-mod config;
+#[cfg(test)] 
+mod tests;
 mod app;
-mod engine;
+
+use engine::bootstrap;
+use app::app;
 
 fn main() {
-
-    // Initialize app state
-    let state = config::read();
-
-    // Initialize app tree
-    let app = app::App::new();
-
-    // Start engine
-    let mut engine = engine::Engine::new(state/*, app*/);
-
-    // Render loop
-    while engine.io()
-    {
-        engine.update();
-        engine.render();
-    }
-
+    bootstrap(app());
 }

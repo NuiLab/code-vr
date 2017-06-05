@@ -1,43 +1,44 @@
 /*!
 # Input Module
 
-This module takes care of all input events processed by the engine
-
+This module takes care of all input events processed by the engine.
+It's modeled similarly to the axis system in Unreal Engine 4.
 */
 mod events;
 
-use config::InputConfig;
+use winit::Event;
+use config::Config;
 use std::clone::Clone;
 use std::collections::HashMap;
-use config::Config;
-use winit::Event;
+use std::sync::Arc;
+
 
 /// Core Input System
 pub struct InputSystem {
-    axis_map: InputConfig,
+    config: Arc<Config>,
     pub inputs: HashMap<String, f32>,
 }
 
 //Input System
 impl InputSystem {
     
-    pub fn new(axis_map: InputConfig) -> InputSystem {
+    pub fn new(config: Arc<Config>) -> InputSystem {
 
-        let mut inputs: HashMap<String, f32> =
-            axis_map.keys().map(|k| (k.clone(), 0.0)).collect();
+        let inputs: HashMap<String, f32> =
+            config.input.keys().map(|k| (k.clone(), 0.0)).collect();
 
         InputSystem {
             inputs,
-            axis_map
+            config
         }
     }
 
     /// Polls window events
     pub fn poll(&mut self, ev: &Event) {
         // Axis Map
-        for (string_key, axis) in self.axis_map.iter() {
+        for (string_key, axis) in self.config.input.iter() {
     
-            for (i, axis_value) in axis.iter().enumerate() {
+            for axis_value in axis {
 
                 let out = events::string_to_wevent(&axis_value.key, &ev);
 
