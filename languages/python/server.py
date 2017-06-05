@@ -3,6 +3,7 @@
 
 import socket
 import os
+import subprocess
 
 def listen():
     connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -55,10 +56,38 @@ def listen():
                         sizeofSlabReceived = len(slab)
                         print("wrote %d bytes" % len (slab))
                         remainingData = remainingData - int(sizeofSlabReceived)
-            
-            print("received: ", acu)
-            
-            if acu != "":
+
+            if acu != "": # if we received a path
+                            
+                print("received: ", acu)
+                raw_path = acu.strip()
+                file_delim = raw_path.rfind('/')
+                file_name = raw_path[raw_path.rfind('/')+1:raw_path.rfind('.')]
+                file_name_ext = file_name + ".json"
+
+                print("checking if file exists...")
+                path = "<" + raw_path + ">"
+                if (os.path.isfile(raw_path)):
+                    print("file exists!")
+                    json = open(file_name_ext, 'w+')
+                    print("output file name: %s" % file_name_ext)
+
+                    # run the astexport module:
+                    # use stderr to check
+                    subprocess.call(['astexport', '--i', raw_path], stdout=json)
+                    json.seek(0, 0)
+                    line = json.readline()
+                    print("%s" % line)
+                    json.close()
+
+                    # at this point we should have the .json file to send
+                    # open in byte mode
+                    json_bytes = open(file_name_ext, 'rb')
+
+
+                else:
+                    print("file not found")
+
                 # make msg upper case
                 acu = acu.upper()
 
@@ -76,6 +105,7 @@ def listen():
 
                 # send message:
                 current_connection.send(encoded_acu)
+            
 
 
             '''

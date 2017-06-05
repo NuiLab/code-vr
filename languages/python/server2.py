@@ -4,8 +4,7 @@ import os
 import select
 import re
 import time
-# from thread import * 
-from _thread import *
+from thread import *
 
 # print 'Number of arguments:', len(sys.argv), 'arguments.'
 # print 'Argument List:', str(sys.argv)
@@ -30,29 +29,29 @@ path = ("./")
 _lsremote = "ls-remote"
 files = [f for f in os.listdir('.') if os.path.isfile(f)]
  
-HOST = '127.0.0.1'   # Symbolic name meaning all available interfaces
+HOST = ''   # Symbolic name meaning all available interfaces
 PORT = int(sys.argv[1]) # Arbitrary non-privileged port
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-print('Socket created')
+print 'Socket created'
  
 #Bind socket to local host and port
 try:
     s.bind((HOST, PORT))
-except(socket.error, msg):
-    print('Bind failed. Error Code : ' + str(msg[0]) + ' Message ' + msg[1])
+except socket.error , msg:
+    print 'Bind failed. Error Code : ' + str(msg[0]) + ' Message ' + msg[1]
     sys.exit()
      
-print('Socket bind complete')
+print 'Socket bind complete'
  
 #Start listening on socket
 s.listen(10)
-print('Socket now listening')
+print 'Socket now listening'
  
 #Function for handling connections. This will be used to create threads
 def clientthread(conn):
-    # Sending message to connected client
-    # conn.send('Connected, type !help for command list:\n'.encode('ascii')) #send only takes string
+    #Sending message to connected client
+    # conn.send('Connected, type !help for command list:\n') #send only takes string
      
     #infinite loop so that function do not terminate and thread do not end.
     while True:
@@ -63,8 +62,7 @@ def clientthread(conn):
         # telnet sends dirty strings, t = data.isalnum() to check. clean if using telnet
 
         # we split data at the first white space. first word is opcode, second is file
-        # _data = data.split(" ", 1)
-        _data = data
+        _data = data.split(" ", 1)
 
         #----ls-remote----#
         if(data == _lsremote):
@@ -177,24 +175,24 @@ def clientthread(conn):
             #break
         else:
             print(data)
-            reply = 'OK...' + data.decode('ascii')
-            conn.sendall(reply.encode('ascii'))
+            reply = 'OK...' + data
+            conn.sendall(reply)
 
         if not data: 
             break
         # conn.sendall(reply)
      
     #came out of loop
-    print('User: '+addr[0]+':'+str(addr[1])+' disconnected')
+    print 'User: '+addr[0]+':'+str(addr[1])+' disconnected'
     conn.close()
  
 #now keep talking with the client
 while 1:
     #wait to accept a connection - blocking call
     conn, addr = s.accept()
-    print('Connected with ' + addr[0] + ':' + str(addr[1]))
+    print 'Connected with ' + addr[0] + ':' + str(addr[1])
      
     #start new thread takes 1st argument as a function name to be run, second is the tuple of arguments to the function.
-    start_new_thread(clientthread, (conn,))
+    start_new_thread(clientthread ,(conn,))
  
 s.close()
