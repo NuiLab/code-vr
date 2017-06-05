@@ -26,7 +26,7 @@ pub struct Engine {
     pub inputs: Arc<InputSystem>,
 
     /// API Specific Renderer
-    pub renderer: Arc<Renderer>,
+    pub renderer: Renderer,
 
     /// Graphics Data Structures
     pub gfx: Arc<GraphicsState>,
@@ -71,17 +71,18 @@ impl Engine {
         self.events_loop.poll_events(|ev| {
 
             // Pass &ev to Input System
-            let inputs = Arc::get_mut(&mut self.inputs).unwrap();
-            inputs.poll(&ev);
+            //let inputs = Arc::get_mut(&mut self.inputs).unwrap();
+            //inputs.poll(&ev);
 
             // Core Events
-            match &ev {
-                &Event::WindowEvent { event: WindowEvent::Resized(w, h), .. } => {
+            match ev {
+			/*
+                Event::WindowEvent { event: WindowEvent::Resized(w, h), .. } => {
                     let mut config_ref = Arc::get_mut(&mut self.config).unwrap();
                     config_ref.window.resolution = [w, h];
                     self.renderer.resize();
-                },
-               &Event::WindowEvent { event: WindowEvent::Closed, .. } => done = true,
+                },*/
+               Event::WindowEvent { event: WindowEvent::Closed, .. } => done = true,
                 _ => (),
             };
         });

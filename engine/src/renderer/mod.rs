@@ -47,7 +47,7 @@ pub struct Renderer {
 
 impl Renderer {
 
-    pub fn new(window_builder: WindowBuilder, config: Arc<Config>) -> (Arc<Renderer>, Arc<Window>, Arc<EventsLoop>) {
+    pub fn new(window_builder: WindowBuilder, config: Arc<Config>) -> (Renderer, Arc<Window>, Arc<EventsLoop>) {
         
         // Create Vulkan Instance, Physical Device
         let instance = {
@@ -128,7 +128,7 @@ impl Renderer {
     }).collect::<Vec<_>>();
 
         (
-            Arc::new(Renderer {
+            Renderer {
                 config,
                 window: window.clone(),
                 instance,
@@ -140,7 +140,7 @@ impl Renderer {
                 framebuffers,
                 render_pass,
                 queue
-            }),
+            },
             window,
             Arc::new(events_loop)
         )
