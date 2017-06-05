@@ -81,30 +81,59 @@ def listen():
                     json.close()
 
                     # at this point we should have the .json file to send
+                    # query .json file size
+                    json_path = './'+file_name_ext
+                    file_size = os.path.getsize(json_path)
+                    print("sending %s bytes" % file_size)
+
+                    # send file size to client
+                    current_connection.send(str(file_size).encode('ascii'))
+
                     # open in byte mode
                     json_bytes = open(file_name_ext, 'rb')
+                    buff_read = 0
+                    bytes_remaining = int(file_size)
+                    
+                    while bytes_remaining != 0:
+                        if bytes_remaining >= 8: # slab >= 8 bytes
+                            buff_read = json_bytes.read(8)
+                            sizeof_slab_read = len(buff_read)
+                            print('read: %d bytes' % sizeof_slab_read)
+                            # send slab to client
+                            current_connection.send(buff_read)
+                            bytes_remaining = bytes_remaining - int(sizeof_slab_read)
+                        else: # slab smaller than 8 bytes
+                            buff_read = json_bytes.read(bytes_remaining)
+                            sizeof_slab_read = len(buff_read)
+                            print('read: %d bytes' % sizeof_slab_read)
+                            # send small slab to client
+                            current_connection.send(buff_read)
+                            bytes_remaining = bytes_remaining - int(sizeof_slab_read)
+                    print('read the file completely')
 
+                    # remove local json file (residual)
+                    os.remove(json_path)
 
                 else:
                     print("file not found")
 
-                # make msg upper case
-                acu = acu.upper()
+                    # make msg upper case
+                    acu = acu.upper()
 
-                print("sending: ", acu)
+                    print("sending: ", acu)
 
 
-                # send message size
-                responseSize = len(acu)
-                print("sending %d bytes" % responseSize)
-                sizeS = str(responseSize)
-                current_connection.send(sizeS.encode('ascii'))
-                
-                # encode it
-                encoded_acu = acu.encode('ascii')
+                    # send message size
+                    responseSize = len(acu)
+                    print("sending %d bytes" % responseSize)
+                    sizeS = str(responseSize)
+                    current_connection.send(sizeS.encode('ascii'))
+                    
+                    # encode it
+                    encoded_acu = acu.encode('ascii')
 
-                # send message:
-                current_connection.send(encoded_acu)
+                    # send message:
+                    current_connection.send(encoded_acu)
             
 
 
