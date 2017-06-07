@@ -7,6 +7,7 @@ import subprocess
 import fileinput
 from export import export_json
 from parse import parse
+import json
 
 
 def listen():
@@ -73,24 +74,24 @@ def listen():
                 path = "<" + raw_path + ">"
                 if (os.path.isfile(raw_path)):
                     print("file exists!")
-                    json = open(file_name_ext, 'w+')
+                    json_file = open(file_name_ext, 'w+')
                     print("output file name: %s" % file_name_ext)
 
                     # run the astexport module:
                     # use stderr to check
                     # subprocess.call(['astexport', '--i', raw_path], stdout=json)
 
+                    # run the astexport module:
                     source = "".join(fileinput.input(raw_path))
                     tree = parse(source)
-                    jason = export_json(tree, False)
-                    print("look at this JASON! %s" % jason)
+                    ast = export_json(tree, False)
+                    json_file.write(ast) # or json.dump(jason, json_file)
+                    json_file.close()
 
-                    
-
-                    json.seek(0, 0)
-                    line = json.readline()
-                    print("%s" % line)
-                    json.close()
+                    # json_file.seek(0, 0)
+                    # line = json_file.readline()
+                    # print("%s" % line)
+                    # json_file.close()
 
                     # at this point we should have the .json file to send
                     # query .json file size

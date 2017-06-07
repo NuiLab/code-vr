@@ -84,6 +84,19 @@ fn check_file(command: &str, mut stream: &mut TcpStream) -> Result<String, Box<e
 
     if remaining_data > 260 //big message; write to file
     {
+
+        //format file name
+        // ../files/file1.py
+        //let start = command.rfind('.');
+        //let end = command.rfind('/');
+        
+        /*let mut file_name = &command[(&start as usize)..(&end as usize)];
+        file_name.push_str(".json");
+        println!("{}", &command);
+        println!("{}", file_name);
+        */
+        //&r[0..(array_limit as usize + 1)];
+
         //create a file
         let mut file_buffer = BufWriter::new(File::create("covfefe.json")?);
 
@@ -108,7 +121,9 @@ fn check_file(command: &str, mut stream: &mut TcpStream) -> Result<String, Box<e
                 let slab = stream.read(&mut r);
                 match slab {
                     Ok(n) => {
-                        let mut r_slice = &r[0..(array_limit as usize)];
+                        let mut r_slice = &r[0..(array_limit as usize + 1)]; // fixing underreading
+                                                                             // caused by not using
+                                                                             // subprocess on server
                         file_buffer.write(&mut r_slice)?;
                         file_buffer.flush()?;
                         println!("wrote {} bytes to file", n);
