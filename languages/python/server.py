@@ -4,6 +4,10 @@
 import socket
 import os
 import subprocess
+import fileinput
+from export import export_json
+from parse import parse
+
 
 def listen():
     connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -74,7 +78,15 @@ def listen():
 
                     # run the astexport module:
                     # use stderr to check
-                    subprocess.call(['astexport', '--i', raw_path], stdout=json)
+                    # subprocess.call(['astexport', '--i', raw_path], stdout=json)
+
+                    source = "".join(fileinput.input(raw_path))
+                    tree = parse(source)
+                    jason = export_json(tree, False)
+                    print("look at this JASON! %s" % jason)
+
+                    
+
                     json.seek(0, 0)
                     line = json.readline()
                     print("%s" % line)
@@ -112,7 +124,7 @@ def listen():
                     print('read the file completely')
 
                     # remove local json file (residual)
-                    os.remove(json_path)
+                    # os.remove(json_path)
 
                 else:
                     print("file not found")
