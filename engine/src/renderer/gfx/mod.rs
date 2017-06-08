@@ -2,13 +2,11 @@
 # CodeVR Graphics
 
 CodeVR is powered by a data driven renderer. Actors in the engine add graphics objects 
-to the RenderState, which generate vulkan data structures that can be mutated by actors.
-
-The renderer then traverses the render state, and generates command buffers that are
-sent to Vulkan's rendering queue.
+to the GraphicsState, which in turn generates an API specific graphics state and
+communicates between this intermediary data layer.
 
 An actor accesses the `gfx` state from their EngineState struct, and calls
-methods that return shared pointers to the resource that they can mutate.
+methods that return shared pointers with mutexes to the resource that they want to mutate.
 
 ```
 // Add a camera
@@ -22,15 +20,17 @@ let img = gfx.image("texture.png");
 let tex = gfx.texture(img);
 let text = gfx.text("Hello World");
 ```
+
+During the engine's polling step, it checks if there's only one pointer to a resource, 
+if there's only one, it will deallocate that resource, otherwise 
 */
 mod camera;
 mod mesh;
 mod text;
 
-use vulkano_win::{Window};
 use std::sync::{Arc, Mutex};
-use config::Config;
 pub use self::camera::*;
+use std::collections::HashMap;
 
 /// Centralized Graphics Store
 pub struct GraphicsState {

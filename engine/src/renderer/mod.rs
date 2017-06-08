@@ -1,17 +1,21 @@
 pub mod gfx;
+pub mod vulkan;
 
 use winit::{WindowBuilder, EventsLoop};
 use vulkano_win::{Window, VkSurfaceBuild, required_extensions};
-use vulkano::command_buffer::CommandBufferBuilder;
+use vulkano::command_buffer::{AutoCommandBufferBuilder, CommandBufferBuilder};
 use vulkano::device::{Queue, Device, DeviceExtensions};
 use vulkano::format;
-use vulkano::framebuffer::{RenderPass, RenderPassAbstract, Framebuffer, FramebufferAbstract};
+use vulkano::buffer::cpu_access::CpuAccessibleBuffer;
+use vulkano::buffer::BufferUsage;
+use vulkano::framebuffer::{RenderPassAbstract, Framebuffer};
 use vulkano::image::attachment::{AttachmentImageAccess, AttachmentImage};
 use vulkano::image::SwapchainImage;
 use vulkano::instance::{Instance, PhysicalDevice};
 use vulkano::memory::pool::StdMemoryPoolAlloc;
-use vulkano::swapchain::{Swapchain, SurfaceTransform, PresentMode};
-use vulkano::sync::GpuFuture;
+use vulkano::swapchain::{Swapchain, SurfaceTransform, PresentMode, acquire_next_image};
+use vulkano::sync::{now, GpuFuture};
+
 
 use std::clone::Clone;
 use std::sync::Arc;
@@ -19,6 +23,7 @@ use std::time::Duration;
 
 use config::Config;
 pub use self::gfx::GraphicsState;
+use self::vulkan::VulkanGraphicsState;
 use core::MINIMUM_RESOLUTION;
 
 type FinalFramebuffer = Framebuffer<Arc<RenderPassAbstract + Send + Sync>, (((), Arc<SwapchainImage>), AttachmentImageAccess<format::D16Unorm, StdMemoryPoolAlloc>)>;
@@ -41,8 +46,11 @@ pub struct Renderer {
     depth_buffer: Arc<AttachmentImage<format::D16Unorm>>,
     render_pass: Arc<RenderPassAbstract + Send + Sync>,
     framebuffers: Vec<Arc<FinalFramebuffer>>,
-    queue: Arc<Queue>
+    queue: Arc<Queue>,
+    previous_frame: Box<GpuFuture>,
 
+    // Vulkan Graphics State
+    api_gfx: VulkanGraphicsState
 }
 
 impl Renderer {
@@ -119,13 +127,14 @@ impl Renderer {
         ).unwrap()
     );
 
-
     let framebuffers = images.iter().map(|image| {
         Arc::new(Framebuffer::start(render_pass.clone())
             .add(image.clone()).unwrap()
             .add(depth_buffer.clone()).unwrap()
             .build().unwrap())
     }).collect::<Vec<_>>();
+
+    let api_gfx = VulkanGraphicsState::new();
 
         (
             Renderer {
@@ -139,7 +148,9 @@ impl Renderer {
                 depth_buffer,
                 framebuffers,
                 render_pass,
-                queue
+                queue,
+                api_gfx,
+                previous_frame: Box::new(now(device.clone())) as Box<GpuFuture>
             },
             window,
             Arc::new(events_loop)
@@ -166,11 +177,76 @@ impl Renderer {
     }
 
     pub fn render(&mut self, gfx: &GraphicsState) {
-        for camera in &gfx.cameras {
-            if let Ok(cam) = camera.lock() {
+
+        // Sanity check for api_gfx
+        // Verify that api_gfx.cameras.length == gfx.cameras.length
+        // and expand vectors if it's not true.
+        
+        self.previous_frame.cleanup_finished();
+
+
+        
+        let (image_num, acquire_future) = acquire_next_image(self.swapchain.clone(), Duration::new(1, 0)).unwrap();
+        
+        let command_buffer = AutoCommandBufferBuilder::new(self.device.clone(), self.queue.family()).unwrap().begin_render_pass(
+                self.framebuffers[image_num].clone(), false, 
+                vec![
+                    [0.0, 0.0, 1.0, 1.0].into(),
+                    1f32.into()
+                ]).unwrap().build().unwrap();
+                
+        for (camera_index, camera) in gfx.cameras.iter().enumerate() {
+
+            if Arc::strong_count(camera) == 1 {
+                // Deallocate from the Graphics State
+                // Deallocate from the ApiGraphicsState
+                //camera.drop();
+            }
+            else if let Ok(cam) = camera.lock() {
+
                 println!("{:?}", cam.view);
+
+                {
+                    // if get index and its null, create it
+                    // aquiring write lock for the uniform buffer
+                    let mut buffer_content = self.api_gfx.cameras[camera_index].ubo.write().unwrap(); 
+                    buffer_content.view = cam.view.into();
+                    buffer_content.projection = cam.projection.into();
+                }
+
+                /* 
+                for (node_index, node) in gfx.nodes.iter().enumerate() {
+
+                   // if its descriptor set 
+                   // update model matrix ubo for that node
+                   let set = 0;
+
+                   for primitive in node.mesh {
+                       let vbo = api_gfx.buffers[pr];
+                            
+                            .begin_render_pass(
+                                self.framebuffers[image_num].clone(), false,
+                                self.renderpass.desc().start_clear_values()
+                                    .color([0.0, 0.0, 1.0, 1.0]).depth((1f32))).unwrap()
+                            .draw_indexed(
+                                primitive.pipeline.clone(), DynamicState::none(),
+                                primitive.vertex_buffer.clone(), 
+                                primitive.index_buffer.clone(), node.set.clone(), ()).unwrap()
+                            .end_render_pass().unwrap()
+                            .build().unwrap();
+                   }
+                }
+                */
+
             }
         }
+
+        let future = self.previous_frame.join(acquire_future)
+            .then_execute(self.queue.clone(), command_buffer).unwrap()
+            .then_swapchain_present(self.queue.clone(), self.swapchain.clone(), image_num)
+            .then_signal_fence_and_flush().unwrap();
+
+         self.previous_frame = Box::new(future) as Box<_>;
 
     }
 }
@@ -189,8 +265,6 @@ fn create_swapchain(window: &Window,
             .surface()
             .capabilities(physical_device)
             .expect("failed to get surface capabilities");
-
-            
 
 
         let dimensions = if config.window.resolution[0] <= MINIMUM_RESOLUTION[0] ||
