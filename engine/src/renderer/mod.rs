@@ -20,6 +20,7 @@ use vulkano::sync::{now, GpuFuture};
 use std::clone::Clone;
 use std::sync::Arc;
 use std::time::Duration;
+use std::mem;
 
 use config::Config;
 pub use self::gfx::GraphicsState;
@@ -142,7 +143,6 @@ impl Renderer {
                 window: window.clone(),
                 instance,
                 physical_device,
-                device,
                 swapchain,
                 images,
                 depth_buffer,
@@ -150,7 +150,8 @@ impl Renderer {
                 render_pass,
                 queue,
                 api_gfx,
-                previous_frame: Box::new(now(device.clone())) as Box<GpuFuture>
+                previous_frame: Box::new(now(device.clone())) as Box<GpuFuture>,
+                device
             },
             window,
             Arc::new(events_loop)
@@ -181,11 +182,9 @@ impl Renderer {
         // Sanity check for api_gfx
         // Verify that api_gfx.cameras.length == gfx.cameras.length
         // and expand vectors if it's not true.
-        
+
         self.previous_frame.cleanup_finished();
 
-
-        
         let (image_num, acquire_future) = acquire_next_image(self.swapchain.clone(), Duration::new(1, 0)).unwrap();
         
         let command_buffer = AutoCommandBufferBuilder::new(self.device.clone(), self.queue.family()).unwrap().begin_render_pass(
@@ -240,12 +239,13 @@ impl Renderer {
 
             }
         }
-
-        let future = self.previous_frame.join(acquire_future)
+        let prev = mem::replace(&mut self.previous_frame, Box::new(now(self.device.clone())));
+        
+        let future = prev.join(acquire_future)
             .then_execute(self.queue.clone(), command_buffer).unwrap()
             .then_swapchain_present(self.queue.clone(), self.swapchain.clone(), image_num)
             .then_signal_fence_and_flush().unwrap();
-
+        
          self.previous_frame = Box::new(future) as Box<_>;
 
     }

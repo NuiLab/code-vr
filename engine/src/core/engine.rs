@@ -18,6 +18,7 @@ pub const MINIMUM_RESOLUTION: [u32; 2] = [640, 480];
 pub struct Engine {
 
     /// Engine Configuration
+    /// @TODO - Wrap in Mutex
     config: Arc<Config>,
 
     /// Actor Scene Graph
@@ -99,6 +100,7 @@ impl Engine {
 
         // Grab lock for graphics state
         let gfx = self.gfx.lock().unwrap();
+        
         // Render graphics state
         self.renderer.render(&gfx);
     }

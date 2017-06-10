@@ -26,13 +26,17 @@ pub struct Config {
 }
 
 impl Config {
-    fn new() -> Config {
+    pub fn new() -> Config {
         Config {
             window: WindowConfig::new(),
             graphics: GraphicsConfig::new(),
             sound: SoundConfig::new(),
             input: default_input()
         }
+    }
+
+    pub fn set(new_config: Config) {
+        // @TODO - set and write data to WORKING_DIRECTORY
     }
 }
 
