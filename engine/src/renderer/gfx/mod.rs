@@ -34,29 +34,29 @@ use std::collections::HashMap;
 
 /// Centralized Graphics Store
 pub struct GraphicsState {
-  pub buffers: Vec<u32>,
-  pub buffer_views: Vec<u32>,
-  pub images: Vec<u32>,
-  pub textures: Vec<u32>,
-  pub shaders: Vec<u32>,
-  pub pipelines: Vec<u32>,
-  pub cameras: Vec<Arc<Mutex<Camera>>>,
-  pub nodes: Vec<u32>,
-  pub meshes: Vec<u32>,
+    pub buffers: Vec<u32>,
+    pub buffer_views: Vec<u32>,
+    pub images: Vec<u32>,
+    pub textures: Vec<u32>,
+    pub shaders: Vec<u32>,
+    pub pipelines: Vec<u32>,
+    pub cameras: Vec<Arc<Mutex<Camera>>>,
+    pub nodes: Vec<u32>,
+    pub meshes: Vec<u32>,
 }
 
 impl GraphicsState {
-  pub fn new() -> GraphicsState {
-    GraphicsState {
-      buffers: Vec::new(),
-      buffer_views: Vec::new(),
-      images: Vec::new(),
-      textures: Vec::new(),
-      shaders: Vec::new(),
-      pipelines: Vec::new(),
-      cameras: Vec::new(),
-      nodes: Vec::new(),
-      meshes: Vec::new(),
+    pub fn new() -> GraphicsState {
+        GraphicsState {
+            buffers: Vec::new(),
+            buffer_views: Vec::new(),
+            images: Vec::new(),
+            textures: Vec::new(),
+            shaders: Vec::new(),
+            pipelines: Vec::new(),
+            cameras: Vec::new(),
+            nodes: Vec::new(),
+            meshes: Vec::new(),
+        }
     }
-  }
 }

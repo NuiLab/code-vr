@@ -54,7 +54,7 @@ use vulkano::device::Device;
 use vulkano::image::immutable::ImmutableImage;
 use vulkano::buffer::{BufferUsage, DeviceLocalBuffer};
 use vulkano::sampler::{Filter, Sampler, MipmapMode, SamplerAddressMode};
-use vulkano::pipeline::viewport::{Viewport};
+use vulkano::pipeline::viewport::Viewport;
 use cgmath::{Matrix4, SquareMatrix};
 
 use std::sync::Arc;
@@ -62,10 +62,14 @@ use std::collections::HashMap;
 use std::path::Path;
 
 /// Core Text Vertex Shader
-pub mod vs { include!{concat!(env!("OUT_DIR"), "/shaders/src/renderer/gfx/text/shaders/text_vs.glsl")} }
+pub mod vs {
+    include!{concat!(env!("OUT_DIR"), "/shaders/src/renderer/gfx/text/shaders/text_vs.glsl")}
+}
 
 /// Core Text Fragment Sahder
-pub mod fs { include!{concat!(env!("OUT_DIR"), "/shaders/src/renderer/gfx/text/shaders/text_fs.glsl")} }
+pub mod fs {
+    include!{concat!(env!("OUT_DIR"), "/shaders/src/renderer/gfx/text/shaders/text_fs.glsl")}
+}
 
 /// Core Text Pipeline Layout
 /*
@@ -80,31 +84,30 @@ mod pipeline_layout {
 }*/
 
 struct Font {
-  texture: Vec<u8>,
-  char_to_vec2: HashMap<char, [u16; 2]>,
-  char_size: [u8; 2]
+    texture: Vec<u8>,
+    char_to_vec2: HashMap<char, [u16; 2]>,
+    char_size: [u8; 2],
 }
 
 struct VulkanFont {
-  sampler: Sampler,
-  pipeline: u8,
-  vbo: Vec<f32>,
+    sampler: Sampler,
+    pipeline: u8,
+    vbo: Vec<f32>,
 }
 
 pub struct TextRenderer {
-  fonts: HashMap<String, Font>,
-  device: Arc<Device>
+    fonts: HashMap<String, Font>,
+    device: Arc<Device>,
 }
 
 impl TextRenderer {
+    pub fn new(device: Arc<Device>, queue: u8) -> TextRenderer {
 
-  pub fn new(device: Arc<Device>, queue: u8) -> TextRenderer {
+        // Core Shaders
+        let vs = vs::Shader::load(&device).expect("failed to create shader module");
 
-    // Core Shaders
-    let vs = vs::Shader::load(&device).expect("failed to create shader module");
-
-    let fs = fs::Shader::load(&device).expect("failed to create shader module");
-/*
+        let fs = fs::Shader::load(&device).expect("failed to create shader module");
+        /*
     // Core Sampler
     let sampler = Sampler::new(&device, Filter::Linear,
                                                  Filter::Linear, MipmapMode::Nearest,
@@ -164,19 +167,19 @@ impl TextRenderer {
 
     let pipeline_layout = pipeline_layout::CustomPipeline::new(&device).unwrap();
 */
-    TextRenderer {
-      fonts: HashMap::new(),
-      device
+        TextRenderer {
+            fonts: HashMap::new(),
+            device,
+        }
     }
-  }
 
-  /// Builds a font and adds it to the renderer.
-  pub fn font(&mut self, path: String, name: String, char_range: (u16, u16)) {
-    //self.device.
-    //let font_img_buffer = msdfgen.run(path, char_range);
-    //let font = Font {
-      
-    //}
+    /// Builds a font and adds it to the renderer.
+    pub fn font(&mut self, path: String, name: String, char_range: (u16, u16)) {
+        //self.device.
+        //let font_img_buffer = msdfgen.run(path, char_range);
+        //let font = Font {
+
+        //}
     //self.fonts.insert(name, font);
 /*
         let pixel_buffer = {
@@ -202,14 +205,11 @@ impl TextRenderer {
 
 
 */
-  }
+    }
 
-  /// Allocates all fonts in GPU memory. 
-  pub fn allocate(&mut self, cmd: u8) {
-    // Traverse local font store
-    for (string_key, font) in self.fonts.iter() {
-
-      }
-  }
-
+    /// Allocates all fonts in GPU memory.
+    pub fn allocate(&mut self, cmd: u8) {
+        // Traverse local font store
+        for (string_key, font) in self.fonts.iter() {}
+    }
 }

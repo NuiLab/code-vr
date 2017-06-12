@@ -15,17 +15,20 @@ pub struct EngineState {
     pub gfx: Arc<Mutex<GraphicsState>>,
 
     /// Game Engine State (Resolution, quality, inputs, etc.)
-    config: Arc<Config>
+    config: Arc<Config>,
 }
 
 impl EngineState {
-
-    pub fn new(id: u64, config: Arc<Config>, input: Arc<Mutex<InputSystem>>, gfx: Arc<Mutex<GraphicsState>> ) -> EngineState {
+    pub fn new(id: u64,
+               config: Arc<Config>,
+               input: Arc<Mutex<InputSystem>>,
+               gfx: Arc<Mutex<GraphicsState>>)
+               -> EngineState {
         EngineState {
             id,
             input,
             gfx,
-            config
+            config,
         }
     }
 
@@ -39,8 +42,9 @@ impl EngineState {
             Ok(input_guard) => {
                 let input_system = &*input_guard;
                 input_system.inputs.get(&key).unwrap_or(&0.0).clone()
-                },
-            _ => 0.0
-        } 
+            }
+            _ => 0.0,
+        }
     }
 }
+

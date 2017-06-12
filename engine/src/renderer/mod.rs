@@ -27,11 +27,12 @@ pub use self::gfx::GraphicsState;
 use self::vulkan::VulkanGraphicsState;
 use core::MINIMUM_RESOLUTION;
 
-type FinalFramebuffer = Framebuffer<Arc<RenderPassAbstract + Send + Sync>, (((), Arc<SwapchainImage>), AttachmentImageAccess<format::D16Unorm, StdMemoryPoolAlloc>)>;
+type FinalFramebuffer = Framebuffer<Arc<RenderPassAbstract + Send + Sync>,
+                                    (((), Arc<SwapchainImage>),
+                                     AttachmentImageAccess<format::D16Unorm, StdMemoryPoolAlloc>)>;
 
 /// Handles the rendering of the graphics state.
 pub struct Renderer {
-
     /// Engine configuration
     config: Arc<Config>,
 
@@ -51,20 +52,23 @@ pub struct Renderer {
     previous_frame: Box<GpuFuture>,
 
     // Vulkan Graphics State
-    api_gfx: VulkanGraphicsState
+    api_gfx: VulkanGraphicsState,
 }
 
 impl Renderer {
 
-    pub fn new(window_builder: WindowBuilder, config: Arc<Config>) -> (Renderer, Arc<Window>, Arc<EventsLoop>) {
-        
+    /// Initializes Vulkan Renderer
+    pub fn new(window_builder: WindowBuilder,
+               config: Arc<Config>)
+               -> (Renderer, Arc<Window>, Arc<EventsLoop>) {
+
         // Create Vulkan Instance, Physical Device
         let instance = {
             let extensions = required_extensions();
             Instance::new(None, &extensions, &[]).expect("Failed to create Vulkan instance.")
         };
-		let ins = instance.clone();
-		
+        let ins = instance.clone();
+
         let physical = PhysicalDevice::enumerate(&ins)
             .next()
             .expect("No vulkan device is available.");
@@ -73,7 +77,9 @@ impl Renderer {
 
         // Create Window
         let events_loop = EventsLoop::new();
-        let window = Arc::new(window_builder.build_vk_surface(&events_loop, instance.clone()).unwrap());
+        let window = Arc::new(window_builder
+                                  .build_vk_surface(&events_loop, instance.clone())
+                                  .unwrap());
 
         // Queue ID for Device generation
         let queue = physical
@@ -92,7 +98,7 @@ impl Renderer {
                         physical.supported_features(),
                         &device_ext,
                         [(queue, 0.5)].iter().cloned())
-                    .expect("failed to create device")
+                .expect("failed to create device")
         };
 
         // Device Queue
@@ -102,11 +108,14 @@ impl Renderer {
         let (swapchain, images) =
             create_swapchain(&window, physical, &device, &queue, None, &config);
 
-        let depth_buffer = AttachmentImage::transient(device.clone(), images[0].dimensions(), format::D16Unorm).unwrap();
+        let depth_buffer =
+            AttachmentImage::transient(device.clone(), images[0].dimensions(), format::D16Unorm)
+                .unwrap();
 
         // Render Pass
-        let render_pass: Arc<RenderPassAbstract + Send + Sync> = Arc::new(
-        single_pass_renderpass!(device.clone(),
+        let render_pass: Arc<RenderPassAbstract + Send + Sync> =
+            Arc::new(
+                single_pass_renderpass!(device.clone(),
             attachments: {
                 color: {
                     load: Clear,
@@ -125,108 +134,125 @@ impl Renderer {
                 color: [color],
                 depth_stencil: {depth}
             }
-        ).unwrap()
-    );
+        ).unwrap(),
+            );
 
-    let framebuffers = images.iter().map(|image| {
-        Arc::new(Framebuffer::start(render_pass.clone())
-            .add(image.clone()).unwrap()
-            .add(depth_buffer.clone()).unwrap()
-            .build().unwrap())
-    }).collect::<Vec<_>>();
+        let framebuffers = images
+            .iter()
+            .map(|image| {
+                Arc::new(Framebuffer::start(render_pass.clone())
+                             .add(image.clone())
+                             .unwrap()
+                             .add(depth_buffer.clone())
+                             .unwrap()
+                             .build()
+                             .unwrap())
+            })
+            .collect::<Vec<_>>();
 
-    let api_gfx = VulkanGraphicsState::new();
+        let api_gfx = VulkanGraphicsState::new();
 
-        (
-            Renderer {
-                config,
-                window: window.clone(),
-                instance,
-                physical_device,
-                swapchain,
-                images,
-                depth_buffer,
-                framebuffers,
-                render_pass,
-                queue,
-                api_gfx,
-                previous_frame: Box::new(now(device.clone())) as Box<GpuFuture>,
-                device
-            },
-            window,
-            Arc::new(events_loop)
-        )
+        (Renderer {
+             config,
+             window: window.clone(),
+             instance,
+             physical_device,
+             swapchain,
+             images,
+             depth_buffer,
+             framebuffers,
+             render_pass,
+             queue,
+             api_gfx,
+             previous_frame: Box::new(now(device.clone())) as Box<GpuFuture>,
+             device,
+         },
+         window,
+         Arc::new(events_loop))
     }
 
+    /// Resizes Vulkan data structures
     pub fn resize(&mut self) {
-                    let (swapchain, images) =
-                        create_swapchain(&self.window, 
-                                         PhysicalDevice::from_index(&self.instance, self.physical_device).unwrap(),
-                                         &self.device,
-                                         &self.queue,
-                                         Some(&self.swapchain),
-                                         &self.config);
-                    self.swapchain = swapchain;
-                    self.depth_buffer = AttachmentImage::transient(self.device.clone(), images[0].dimensions(), format::D16Unorm).unwrap();
-					self.images = images;
-                    self.framebuffers = self.images.iter().map(|image| {
-                        Arc::new(Framebuffer::start(self.render_pass.clone())
-                            .add(image.clone()).unwrap()
-                            .add(self.depth_buffer.clone()).unwrap()
-                            .build().unwrap())
-                    }).collect::<Vec<_>>();
+        let (swapchain, images) =
+            create_swapchain(&self.window,
+                             PhysicalDevice::from_index(&self.instance, self.physical_device)
+                                 .unwrap(),
+                             &self.device,
+                             &self.queue,
+                             Some(&self.swapchain),
+                             &self.config);
+        self.swapchain = swapchain;
+        self.depth_buffer = AttachmentImage::transient(self.device.clone(),
+                                                       images[0].dimensions(),
+                                                       format::D16Unorm)
+            .unwrap();
+        self.images = images;
+        self.framebuffers = self.images
+            .iter()
+            .map(|image| {
+                Arc::new(Framebuffer::start(self.render_pass.clone())
+                             .add(image.clone())
+                             .unwrap()
+                             .add(self.depth_buffer.clone())
+                             .unwrap()
+                             .build()
+                             .unwrap())
+            })
+            .collect::<Vec<_>>();
     }
 
+    /// Renders the Graphics State data layer, converting to API data along the way.
     pub fn render(&mut self, gfx: &GraphicsState) {
 
-        // Sanity check for api_gfx
-        // Verify that api_gfx.cameras.length == gfx.cameras.length
-        // and expand vectors if it's not true.
-
+        // Acquire frame future
         self.previous_frame.cleanup_finished();
 
-        let (image_num, acquire_future) = acquire_next_image(self.swapchain.clone(), Duration::new(1, 0)).unwrap();
-        
-        let command_buffer = AutoCommandBufferBuilder::new(self.device.clone(), self.queue.family()).unwrap().begin_render_pass(
-                self.framebuffers[image_num].clone(), false, 
-                vec![
-                    [0.0, 0.0, 1.0, 1.0].into(),
-                    1f32.into()
-                ]).unwrap().build().unwrap();
-                
+        let (image_num, acquire_future) =
+            acquire_next_image(self.swapchain.clone(), Duration::new(1, 0)).unwrap();
+
+        let command_buffer = AutoCommandBufferBuilder::new(self.device.clone(),
+                                                           self.queue.family())
+            .unwrap()
+            .begin_render_pass(self.framebuffers[image_num].clone(),
+                               false,
+                               vec![[0.0, 0.0, 1.0, 1.0].into(), 1f32.into()])
+            .unwrap()
+            .build()
+            .unwrap();
+
+        // Graphics Data Layer Traversal
         for (camera_index, camera) in gfx.cameras.iter().enumerate() {
 
+            // Deallocate assets with no references
             if Arc::strong_count(camera) == 1 {
-                // Deallocate from the Graphics State
-                // Deallocate from the ApiGraphicsState
-                //camera.drop();
-            }
-            else if let Ok(cam) = camera.lock() {
 
-                println!("{:?}", cam.view);
+                //gfx.cameras.remove(camera_index);
+                //self.api_gfx.cameras.remove(camera_index);
+                
+            } else if let Ok(cam) = camera.lock() {
+
+                // Create an Vulkan Camera if one doesn't already exist
+                if self.api_gfx.cameras.len() < gfx.cameras.len() {
+                    self.api_gfx.cameras.push(vulkan::Camera::new(&self.device, &self.queue, cam.view.into(), cam.projection.into()));
+                }
 
                 {
                     // if get index and its null, create it
                     // aquiring write lock for the uniform buffer
-                    let mut buffer_content = self.api_gfx.cameras[camera_index].ubo.write().unwrap(); 
+                    let mut buffer_content = self.api_gfx.cameras[camera_index].ubo.write().unwrap();
                     buffer_content.view = cam.view.into();
                     buffer_content.projection = cam.projection.into();
                 }
 
-                /* 
-                for (node_index, node) in gfx.nodes.iter().enumerate() {
 
+                for (node_index, node) in gfx.nodes.iter().enumerate() {
+                /* 
                    // if its descriptor set 
                    // update model matrix ubo for that node
                    let set = 0;
 
                    for primitive in node.mesh {
                        let vbo = api_gfx.buffers[pr];
-                            
-                            .begin_render_pass(
-                                self.framebuffers[image_num].clone(), false,
-                                self.renderpass.desc().start_clear_values()
-                                    .color([0.0, 0.0, 1.0, 1.0]).depth((1f32))).unwrap()
                             .draw_indexed(
                                 primitive.pipeline.clone(), DynamicState::none(),
                                 primitive.vertex_buffer.clone(), 
@@ -234,19 +260,23 @@ impl Renderer {
                             .end_render_pass().unwrap()
                             .build().unwrap();
                    }
+                   */
                 }
-                */
 
             }
         }
+
+        // Setup next Future
         let prev = mem::replace(&mut self.previous_frame, Box::new(now(self.device.clone())));
-        
+
         let future = prev.join(acquire_future)
-            .then_execute(self.queue.clone(), command_buffer).unwrap()
+            .then_execute(self.queue.clone(), command_buffer)
+            .unwrap()
             .then_swapchain_present(self.queue.clone(), self.swapchain.clone(), image_num)
-            .then_signal_fence_and_flush().unwrap();
-        
-         self.previous_frame = Box::new(future) as Box<_>;
+            .then_signal_fence_and_flush()
+            .unwrap();
+
+        self.previous_frame = Box::new(future) as Box<_>;
 
     }
 }
@@ -276,8 +306,7 @@ fn create_swapchain(window: &Window,
 
             if extent[0] < min[0] || extent[1] < min[1] {
                 min
-            }
-            else {
+            } else {
                 extent
             }
         } else {
@@ -309,6 +338,6 @@ fn create_swapchain(window: &Window,
                        present,
                        true,
                        old)
-                .expect("failed to create swapchain")
+            .expect("failed to create swapchain")
     }
 }

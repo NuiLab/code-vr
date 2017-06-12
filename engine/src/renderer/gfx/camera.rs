@@ -52,7 +52,7 @@ impl GraphicsState {
 
             ProjectionMode::Orthographic => ortho(2.0, 2.0, 2.0, 2.0, 1.0, 10000.),
         };
-        
+
         let camera = Arc::new(Mutex::new(Camera { view, projection }));
 
         self.cameras.push(camera.clone());

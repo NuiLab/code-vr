@@ -1,4 +1,5 @@
-use winit::{WindowBuilder, get_available_monitors, get_primary_monitor, Event, WindowEvent, EventsLoop};
+use winit::{WindowBuilder, get_available_monitors, get_primary_monitor, Event, WindowEvent,
+            EventsLoop};
 use vulkano_win::Window;
 
 use std::clone::Clone;
@@ -16,7 +17,6 @@ pub const MINIMUM_RESOLUTION: [u32; 2] = [640, 480];
 
 /// Game Engine
 pub struct Engine {
-
     /// Engine Configuration
     /// @TODO - Wrap in Mutex
     config: Arc<Config>,
@@ -37,18 +37,17 @@ pub struct Engine {
     window: Arc<Window>,
 
     /// OS Events
-    events_loop: Arc<EventsLoop>
-
+    events_loop: Arc<EventsLoop>,
 }
 
 impl Engine {
-
     /// Initialize Engine subsystems
     pub fn new(config: Config, scene: Scene) -> Engine {
 
         let cfg = Arc::new(config.clone());
 
-        let (renderer, window, events_loop) = Renderer::new(create_window(&config.window), cfg.clone());
+        let (renderer, window, events_loop) = Renderer::new(create_window(&config.window),
+                                                            cfg.clone());
 
         let inputs = Arc::new(Mutex::new(InputSystem::new(cfg.clone())));
 
@@ -83,8 +82,8 @@ impl Engine {
                     let mut config_ref = Arc::get_mut(&mut self.config).unwrap();
                     config_ref.window.resolution = [w, h];
                     self.renderer.resize();
-                },
-               Event::WindowEvent { event: WindowEvent::Closed, .. } => running = false,
+                }
+                Event::WindowEvent { event: WindowEvent::Closed, .. } => running = false,
                 _ => (),
             };
         });
@@ -94,13 +93,13 @@ impl Engine {
 
     /// Updates engine subsystems.
     pub fn update(&mut self) {
-        
+
         // Update actors
         self.scene.update(&self.config, &self.gfx, &self.inputs);
 
         // Grab lock for graphics state
         let gfx = self.gfx.lock().unwrap();
-        
+
         // Render graphics state
         self.renderer.render(&gfx);
     }

@@ -1,9 +1,7 @@
-struct Mesh {
-
-}
+struct Mesh {}
 
 struct Primitive {
-  attributes: u32,
-  material: u32,
-  indices: u32
+    attributes: u32,
+    material: u32,
+    indices: u32,
 }
