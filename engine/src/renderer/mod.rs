@@ -233,7 +233,7 @@ impl Renderer {
 
                 // Create an Vulkan Camera if one doesn't already exist
                 if self.api_gfx.cameras.len() < gfx.cameras.len() {
-                    self.api_gfx.cameras.push(vulkan::Camera::new(&self.device, &self.queue, cam.view.into(), cam.projection.into()));
+                    self.api_gfx.cameras.push(vulkan::Camera::new(&self.device, &self.queue, cam.view, cam.projection));
                 }
 
                 {
@@ -246,7 +246,7 @@ impl Renderer {
 
 
                 for (node_index, node) in gfx.nodes.iter().enumerate() {
-                /* 
+                    /* 
                    // if its descriptor set 
                    // update model matrix ubo for that node
                    let set = 0;
@@ -259,12 +259,12 @@ impl Renderer {
                                 primitive.index_buffer.clone(), node.set.clone(), ()).unwrap()
                             .end_render_pass().unwrap()
                             .build().unwrap();
+                    */
                    }
-                   */
+
                 }
 
             }
-        }
 
         // Setup next Future
         let prev = mem::replace(&mut self.previous_frame, Box::new(now(self.device.clone())));

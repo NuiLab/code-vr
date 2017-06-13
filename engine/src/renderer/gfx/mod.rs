@@ -41,8 +41,8 @@ pub struct GraphicsState {
     pub shaders: Vec<u32>,
     pub pipelines: Vec<u32>,
     pub cameras: Vec<Arc<Mutex<Camera>>>,
-    pub nodes: Vec<u32>,
-    pub meshes: Vec<u32>,
+    pub nodes: Vec<Arc<Mutex<u32>>>,
+    pub meshes: Vec<Arc<Mutex<u32>>>,
 }
 
 impl GraphicsState {
