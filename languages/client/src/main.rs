@@ -62,8 +62,10 @@ fn check_file(command: &str, mut stream: &mut TcpStream) -> Result<String, Box<e
     server might send message size smaller than buffer,
     which is usually the case when the server is sending
     the message size:
-    buffer:     _ _ _ _ _ _ _ (bytes)
-    message:    1 2 _ _ _ _ _ (bytes)
+
+            buffer:     _ _ _ _ _ _ _ (bytes)
+            message:    1 2 _ _ _ _ _ (bytes)
+
     (empty characters trail the meaningful characters)
     if this is the case, we shrink the string using .truncate()
     */
@@ -87,18 +89,15 @@ fn check_file(command: &str, mut stream: &mut TcpStream) -> Result<String, Box<e
 
         //format file name
         // ../files/file1.py
-        //let start = command.rfind('.');
-        //let end = command.rfind('/');
-        
-        /*let mut file_name = &command[(&start as usize)..(&end as usize)];
+        let start = command.rfind('/').unwrap() as usize;
+        let end = command.rfind('.').unwrap() as usize;
+        let mut file_name = String::from(&command[start+1..end]);
         file_name.push_str(".json");
         println!("{}", &command);
         println!("{}", file_name);
-        */
-        //&r[0..(array_limit as usize + 1)];
 
         //create a file
-        let mut file_buffer = BufWriter::new(File::create("covfefe.json")?);
+        let mut file_buffer = BufWriter::new(File::create(file_name)?);
 
         while remaining_data != 0
         {
@@ -121,9 +120,10 @@ fn check_file(command: &str, mut stream: &mut TcpStream) -> Result<String, Box<e
                 let slab = stream.read(&mut r);
                 match slab {
                     Ok(n) => {
-                        let mut r_slice = &r[0..(array_limit as usize + 1)]; // fixing underreading
+                        let mut r_slice = &r[0..(array_limit as usize + 1)]; // fixes underreading
                                                                              // caused by not using
-                                                                             // subprocess on server
+                                                                             // subprocess call  on
+                                                                             // the server server
                         file_buffer.write(&mut r_slice)?;
                         file_buffer.flush()?;
                         println!("wrote {} bytes to file", n);

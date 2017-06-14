@@ -124,8 +124,11 @@ def listen():
                             bytes_remaining = bytes_remaining - int(sizeof_slab_read)
                     print('read the file completely')
 
+                    # close .json file
+                    json_bytes.close()
+
                     # remove local json file (residual)
-                    # os.remove(json_path)
+                    os.remove(json_path)
 
                 else:
                     print("file not found")
