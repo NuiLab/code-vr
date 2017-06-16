@@ -84,7 +84,7 @@ def listen():
                     # run the astexport module:
                     source = "".join(fileinput.input(raw_path))
                     tree = parse(source)
-                    ast = export_json(tree, False)
+                    ast = export_json(tree, True) # True or False for pretty printing
                     json_file.write(ast) # or json.dump(jason, json_file)
                     json_file.close()
 
