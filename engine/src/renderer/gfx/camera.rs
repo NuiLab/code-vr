@@ -38,9 +38,11 @@ impl GraphicsState {
             fov,
         } = props;
 
-        let view = Matrix4::look_at(Point3::new(from[0], from[1], from[2]),
-                                    Point3::new(to[0], to[1], to[2]),
-                                    Vector3::new(0.0, 1.0, 0.0));
+        let view = Matrix4::look_at(
+            Point3::new(from[0], from[1], from[2]),
+            Point3::new(to[0], to[1], to[2]),
+            Vector3::new(0.0, 1.0, 0.0),
+        );
 
         let projection = match projection_mode {
 
@@ -60,4 +62,3 @@ impl GraphicsState {
         camera
     }
 }
-

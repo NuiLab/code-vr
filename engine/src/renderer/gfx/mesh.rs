@@ -1,4 +1,6 @@
-struct Mesh {}
+pub struct Mesh {
+    primitives: Vec<Primitive>,
+}
 
 struct Primitive {
     attributes: u32,

@@ -13,6 +13,7 @@ With more incoming.
 
 #[macro_use] extern crate serde_derive;
 #[macro_use] extern crate vulkano;
+#[macro_use] extern crate vulkano_shader_derive;
 extern crate cgmath;
 extern crate image;
 extern crate serde_json;

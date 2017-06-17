@@ -26,10 +26,16 @@ if there's only one, it will deallocate that resource, otherwise
 */
 mod camera;
 mod mesh;
+mod material;
+mod node;
 mod text;
+
 
 use std::sync::{Arc, Mutex};
 pub use self::camera::*;
+pub use self::node::*;
+pub use self::mesh::*;
+pub use self::material::*;
 use std::collections::HashMap;
 
 /// Centralized Graphics Store
@@ -41,8 +47,8 @@ pub struct GraphicsState {
     pub shaders: Vec<u32>,
     pub pipelines: Vec<u32>,
     pub cameras: Vec<Arc<Mutex<Camera>>>,
-    pub nodes: Vec<Arc<Mutex<u32>>>,
-    pub meshes: Vec<Arc<Mutex<u32>>>,
+    pub nodes: Vec<Arc<Mutex<Node>>>,
+    pub meshes: Vec<Arc<Mutex<Mesh>>>,
 }
 
 impl GraphicsState {

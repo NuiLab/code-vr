@@ -15,17 +15,22 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn new(device: &Arc<Device>,
-               queue: &Arc<Queue>,
-               view: Matrix4<f32>,
-               projection: Matrix4<f32>)
-               -> Camera {
+    pub fn new(
+        device: &Arc<Device>,
+        queue: &Arc<Queue>,
+        view: Matrix4<f32>,
+        projection: Matrix4<f32>,
+    ) -> Camera {
         Camera {
-            ubo: CpuAccessibleBuffer::<CameraUbo>::from_data(device.clone(),
-                                                             BufferUsage::all(),
-                                                             Some(queue.family()),
-                                                             CameraUbo { view: view.into(), projection: projection.into() })
-                .expect("Failed to create Camera UBO"),
+            ubo: CpuAccessibleBuffer::<CameraUbo>::from_data(
+                device.clone(),
+                BufferUsage::all(),
+                Some(queue.family()),
+                CameraUbo {
+                    view: view.into(),
+                    projection: projection.into(),
+                },
+            ).expect("Failed to create Camera UBO"),
         }
     }
 }
