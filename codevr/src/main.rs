@@ -1,10 +1,10 @@
-extern crate engine;
+extern crate pyro;
 
 #[cfg(test)] 
 mod tests;
 mod app;
 
-use engine::bootstrap;
+use pyro::bootstrap;
 use app::app;
 
 fn main() {

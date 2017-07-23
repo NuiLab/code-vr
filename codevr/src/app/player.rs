@@ -1,5 +1,5 @@
-use engine::{Actor, EngineState};
-use engine::gfx::{Camera, CameraProps, ProjectionMode};
+use pyro::{Actor, EngineState};
+use pyro::gfx::{Camera, CameraProps, ProjectionMode};
 use std::sync::{Arc, Mutex};
 
 /// A Player in the CodeVR scene, handles its own movement and editing the CodeVR scene.

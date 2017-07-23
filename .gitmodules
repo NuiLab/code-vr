@@ -1,0 +1,3 @@
+[submodule "pyro"]
+	path = pyro
+	url = git@github.com:OpenHID/pyro.git
