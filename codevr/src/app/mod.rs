@@ -1,4 +1,4 @@
-use engine::Scene;
+use pyro::Scene;
 
 mod player;
 
