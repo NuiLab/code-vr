@@ -33,3 +33,5 @@ rusti.sh
 Cargo.lock
 .cargotarget
 /**/*.rs.bk
+/languages/client/*.json
+/languages/python/*.pyc
